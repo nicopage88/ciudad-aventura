@@ -9,7 +9,12 @@ const ui=document.createElement('section');ui.innerHTML=`<aside id="room-panel" 
 if(!roomBtn){roomBtn=document.createElement('button');roomBtn.id='open-room';roomBtn.className='room-launch';roomBtn.textContent='👋 JUGAR CON AMIGOS';ui.prepend(roomBtn)}
 document.body.append(ui);
 const q=s=>ui.querySelector(s),panel=q('#room-panel'),join=q('#join-view'),chat=q('#chat-view'),status=q('#room-status'),notice=q('#notice');
-let room=new URL(location.href).searchParams.get('sala'),player='',name='',connected=false,busy=false,pending=[],markers=new Map(),known=new Set(),initial=true,noticeTimer;
+const DEFAULT_ROOM='98d44850-888c-45f2-b12d-56fc62a967a7';
+let room=new URL(location.href).searchParams.get('sala')||DEFAULT_ROOM;
+if(!new URL(location.href).searchParams.has('sala')){
+  const u=new URL(location.href);u.searchParams.set('sala',DEFAULT_ROOM);history.replaceState(null,'',u);
+}
+let player='',name='',connected=false,busy=false,pending=[],markers=new Map(),known=new Set(),initial=true,noticeTimer;
 const rideUI=document.createElement('section');rideUI.innerHTML=`<aside id="rides-panel" class="rides-panel" hidden><div class="rides-head"><strong>🚗 AVENTONES EN LA SALA</strong><button id="rides-close" aria-label="Cerrar">✕</button></div><p>¿Vai para algún lado? Comparte tu ruta con la junta.</p><form id="ride-form"><label>Desde <input id="ride-origin" maxlength="60" placeholder="Punto de partida" required></label><label>Hacia <input id="ride-destination" maxlength="60" placeholder="Destino" required></label><label>Asientos disponibles <select id="ride-seats"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label><label>Gastos compartidos (opcional) <input id="ride-cost" maxlength="80" placeholder="Ej.: lo conversamos"></label><button>Estar disponible</button><button type="button" id="ride-remove">Dejar de ofrecer</button></form><p id="rides-error" role="status"></p><h3>¿Quién va en tu dirección?</h3><div id="rides-list">Aún no hay aventones disponibles.</div><small>Las solicitudes se coordinan en la sala. El juego no cobra ni reparte pagos.</small></aside>`;
 if(!ridesBtn){ridesBtn=document.createElement('button');ridesBtn.id='rides-open';ridesBtn.className='rides-launch';ridesBtn.hidden=true;ridesBtn.textContent='🚗 AVENTONES';rideUI.prepend(ridesBtn)}
 document.body.append(rideUI);
@@ -27,7 +32,7 @@ function send(text){pending.push(text);sync()}
 window.sendThoughtToRoom=function(text){if(connected&&text){send(text)}};
 function notify(item){let event=null;try{if(item.body.startsWith('@@junta:'))event=JSON.parse(item.body.slice(8))}catch{}if(event&&event.to!==player)return;q('#notice-name').textContent=item.name+(event?'':' dice:');q('#notice-body').textContent=event?({pregunta:'¿Qué querís? 😄',rey:'¿Qué pasa, rey? 👑',necesidad:'¿Qué necesitái? 🤔',saludo:'¡Te manda un saludo! 👋',viaje:'¿Le das un aventón? 🚗',invitar:'Te invita a juntarse. ¿Aceptas?',junta:'Quiere formar una junta contigo. ¿Aceptas?',aceptado:'¡Aceptó tu invitación! 🙌',rechazado:'Por ahora no puede unirse.'}[event.type]||'Te mandó una invitación.'):item.body;let buttons=q('#notice-actions');buttons.replaceChildren();function button(label,fn){let b=document.createElement('button');b.textContent=label;b.onclick=fn;buttons.append(b)}if(event&&['invitar','junta','viaje'].includes(event.type)){button('Aceptar',()=>{send('@@junta:'+JSON.stringify({to:item.player,type:'aceptado'}));notice.hidden=true;show('¡Se armó, po!')});button('Ahora no',()=>{send('@@junta:'+JSON.stringify({to:item.player,type:'rechazado'}));notice.hidden=true})}else{button('Responder',()=>{notice.hidden=true;panel.hidden=false;q('#chat-text').focus()});button('Cerrar',()=>notice.hidden=true)}notice.hidden=false;clearTimeout(noticeTimer);if(!event||!['invitar','junta','viaje'].includes(event.type))noticeTimer=setTimeout(()=>notice.hidden=true,9000)}
 roomBtn.onclick=()=>panel.hidden=!panel.hidden;q('#hide-room').onclick=()=>panel.hidden=true;
-q('#join-room').onclick=async()=>{await window.cityProfileReady;if(!window.cityProfile){window.openCityProfile();return}player=window.cityProfile.id;name=window.cityProfile.nickname;if(!room||!/^[a-zA-Z0-9_-]{8,64}$/.test(room)){room=crypto.randomUUID();const u=new URL(location.href);u.searchParams.set('sala',room);history.replaceState(null,'',u)}connected=true;ridesBtn.hidden=false;initial=true;known.clear();join.hidden=true;chat.hidden=false;setPixelIcon(roomBtn,'chat','MENSAJES');sync()};
+q('#join-room').onclick=async()=>{await window.cityProfileReady;if(!window.cityProfile){window.openCityProfile();return}player=window.cityProfile.id;name=window.cityProfile.nickname;if(!room||!/^[a-zA-Z0-9_-]{8,64}$/.test(room)){room=DEFAULT_ROOM;const u=new URL(location.href);u.searchParams.set('sala',room);history.replaceState(null,'',u)}connected=true;ridesBtn.hidden=false;initial=true;known.clear();join.hidden=true;chat.hidden=false;setPixelIcon(roomBtn,'chat','MENSAJES');sync()};
 q('#leave-room').onclick=()=>{ridesCall('remove').catch(()=>{});connected=false;ridesBtn.hidden=true;ridesPanel.hidden=true;markers.forEach(m=>map.removeLayer(m));markers.clear();chat.hidden=true;join.hidden=false;notice.hidden=true;setPixelIcon(roomBtn,'people','Junta Online')};
 window.addEventListener('city-profile-changed',e=>{if(connected&&(!e.detail||e.detail.id!==player))q('#leave-room').click();else if(e.detail&&room&&!connected){setTimeout(()=>q('#join-room').click(),400)}});
 window.cityProfileReady.then(()=>{if(room&&/^[a-zA-Z0-9_-]{8,64}$/.test(room)){if(window.cityProfile&&!connected){q('#join-room').click();if(window.show)window.show('¡Te uniste automáticamente a la junta!')}else if(!window.cityProfile){if(window.show)window.show('👋 ¡Te invitaron a una junta! Inicia sesión en Perfil.');panel.hidden=false}}});
@@ -98,7 +103,7 @@ async function sync(){
 
     let seen=new Set();
     const now=Date.now();
-    data.players.filter(p=>p.player!==player).forEach(p=>{
+    data.players.filter(p=>p.player!==player && p.name!=='Camila_Maipu' && p.player!=='1eeea094-4128-4988-bc60-a99c10c2eac1').forEach(p=>{
       seen.add(p.player);
       let avatar={};
       try{avatar=JSON.parse(p.avatar||'{}')}catch{}

@@ -101,5 +101,6 @@ const soundScript=document.createElement('script');soundScript.src='sound.js';do
 const multiplayerScript=document.createElement('script');multiplayerScript.src='multiplayer.js';document.body.append(multiplayerScript);
 const pokeScript=document.createElement('script');pokeScript.src='pokemon.js';document.body.append(pokeScript);
 const battleScript=document.createElement('script');battleScript.src='battle.js';document.body.append(battleScript);
+const camilaScript=document.createElement('script');camilaScript.src='camila.js';document.body.append(camilaScript);
 const servicesScript=document.createElement('script');servicesScript.src='services.js';document.body.append(servicesScript);
 const xmasScript=document.createElement('script');xmasScript.src='christmas.js';document.body.append(xmasScript);

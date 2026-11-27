@@ -85,6 +85,33 @@
   let caughtCount = Object.keys(pokedex).length;
   window.getPokedex = () => pokedex;
 
+  window.addPokemonToPokedex = function(pokeData, spawnId) {
+    if (!pokeData || !pokeData.id) return;
+    const cpVal = pokeData.cp || pokeData.baseCp || 1600;
+    const existing = pokedex[pokeData.id];
+    const count = (typeof existing === 'number' ? existing : (existing?.count || 0)) + 1;
+    pokedex[pokeData.id] = {
+      id: pokeData.id,
+      name: pokeData.name,
+      type: pokeData.type,
+      color: pokeData.color || '#4361ee',
+      rarity: pokeData.rarity || 'common',
+      cp: cpVal,
+      hp: pokeData.hp || 190,
+      maxHp: pokeData.hp || 190,
+      moves: pokeData.moves || [],
+      count
+    };
+    savePokedex(pokedex);
+    updatePokedexCount();
+
+    if (spawnId && activeSpawns.has(spawnId)) {
+      const sp = activeSpawns.get(spawnId);
+      if (window.map && sp.marker) window.map.removeLayer(sp.marker);
+      activeSpawns.delete(spawnId);
+    }
+  };
+
   // Active wild Pokémon on map
   const activeSpawns = new Map(); // id -> { marker, data, latlng }
   let spawnCounter = 0;
@@ -164,8 +191,9 @@
         <span id="encounter-status">${spawn.locationName || 'Apareció en la calle'}</span>
       </div>
       <div class="poke-actions">
+        <button class="poke-btn-battle" id="btn-battle-wild">⚔️ Luchar en Arena Pokémon</button>
         <button class="poke-btn-catch" id="btn-catch">🔴 Lanzar Pokébola</button>
-        <button class="poke-btn-berry" id="btn-berry">🍓 Dar Baya (+Captura)</button>
+        <button class="poke-btn-berry" id="btn-berry">🍓 Dar Baya</button>
         <button class="poke-btn-run" id="btn-run">🏃 Dejar ir</button>
       </div>
     `;
@@ -173,11 +201,25 @@
     modalOverlay.hidden = false;
     if (window.playCry) window.playCry(spawn.data.id);
 
+    const btnBattleWild = modalBody.querySelector('#btn-battle-wild');
     const btnCatch = modalBody.querySelector('#btn-catch');
     const btnBerry = modalBody.querySelector('#btn-berry');
     const btnRun = modalBody.querySelector('#btn-run');
     const statusText = modalBody.querySelector('#encounter-status');
     const stage = modalBody.querySelector('#encounter-stage');
+
+    if (btnBattleWild) {
+      btnBattleWild.onclick = () => {
+        if (window.playClickSound) window.playClickSound();
+        modalOverlay.hidden = true;
+        activeEncounter = null;
+        if (window.startPokemonBattleWithWild) {
+          window.startPokemonBattleWithWild(spawn.data, spawnId);
+        } else if (window.startPokemonBattle) {
+          window.startPokemonBattle(spawn.data, { isWild: true, spawnId });
+        }
+      };
+    }
 
     btnBerry.onclick = () => {
       if (window.playClickSound) window.playClickSound();

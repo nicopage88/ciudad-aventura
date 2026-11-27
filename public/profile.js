@@ -61,5 +61,26 @@ q('#auth-switch').onclick=()=>{mode=mode==='login'?'register':'login';q('#auth-s
 q('#auth-form').onsubmit=async e=>{e.preventDefault();let button=q('#auth-submit');button.disabled=true;q('#profile-message').textContent='Un momento…';try{const data=await request({action:mode,nickname:q('#auth-name').value,password:q('#auth-pass').value});q('#auth-pass').value='';setUser(data.user);q('#profile-message').textContent='¡Listo! Personaliza tu personaje.'}catch(err){q('#profile-message').textContent=err.message}finally{button.disabled=false}};
 q('#avatar-save').onclick=async()=>{try{const data=await request({action:'avatar',avatar:selected});setUser(data.user);q('#profile-message').textContent='¡Personaje guardado!';setTimeout(()=>{overlay.hidden=true},700)}catch(err){q('#profile-message').textContent=err.message}};
 q('#logout').onclick=async()=>{try{await request({action:'logout'});setUser(null);q('#profile-message').textContent='Sesión cerrada.'}catch(err){q('#profile-message').textContent=err.message}};
-fetch('/api/account',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('profile');return r.json()}).then(data=>setUser(data.user)).catch(()=>{q('#profile-message').textContent='No se pudo conectar al perfil.'}).finally(()=>window.cityProfileResolve());
+async function autoGuestRegister(){
+  try{
+    const rand=Math.floor(1000+Math.random()*9000);
+    const guestNick='Veci_'+rand;
+    const guestPass='Veci-'+crypto.randomUUID().slice(0,10);
+    const res=await request({action:'register',nickname:guestNick,password:guestPass});
+    if(res&&res.user){
+      setUser(res.user);
+      const xmasItems=['xmas_hat','reindeer','xmas_scarf','tree_hat'];
+      const chosen=xmasItems[Math.floor(Math.random()*xmasItems.length)];
+      request({action:'avatar',avatar:{...res.user.avatar,item:chosen}}).then(d=>{if(d?.user)setUser(d.user);}).catch(()=>{});
+      return res.user;
+    }
+  }catch{}
+  return null;
+}
+fetch('/api/account',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('profile');return r.json()}).then(async data=>{
+  if(data&&data.user)setUser(data.user);
+  else await autoGuestRegister();
+}).catch(async()=>{
+  await autoGuestRegister();
+}).finally(()=>window.cityProfileResolve());
 })();

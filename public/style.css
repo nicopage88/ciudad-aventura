@@ -505,3 +505,94 @@ header {
     display: none;
   }
 }
+
+/* Camila NPC Styling */
+.camila-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+.camila-badge {
+  background: #ff595e;
+  color: #fff;
+  border: 1.5px solid #ffcb05;
+  border-radius: 4px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  padding: 2px 5px;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 #9d0208;
+  margin-bottom: 2px;
+}
+.camila-bubble {
+  background: #fff;
+  color: #1a1a1a;
+  border: 2px solid #ff595e;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font: 800 11px Nunito, sans-serif;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: float-bubble 1.8s ease-in-out infinite alternate;
+  z-index: 1000;
+}
+@keyframes float-bubble {
+  0% { transform: translate(-50%, -2px); }
+  100% { transform: translate(-50%, -8px); }
+}
+.camila-popup-card {
+  background: #1b263b;
+  border: 3px solid #ffcb05;
+  border-radius: 12px;
+  padding: 12px;
+  color: #fff;
+  min-width: 230px;
+}
+.camila-popup-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1.5px solid #415a77;
+  padding-bottom: 5px;
+}
+.camila-actions-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.camila-act-btn {
+  padding: 9px 12px;
+  border-radius: 8px;
+  font: 900 0.8rem Nunito, sans-serif;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: transform 0.1s;
+}
+.camila-act-btn:active {
+  transform: translateY(2px);
+}
+.camila-act-btn.battle-act {
+  background: linear-gradient(180deg, #b91c1c 0%, #7f1d1d 100%);
+  color: #fff;
+  border-color: #fca5a5;
+  box-shadow: 0 3px 0 #450a0a;
+}
+.camila-act-btn.ride-act {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #93c5fd;
+  box-shadow: 0 3px 0 #1d4ed8;
+}
+.camila-act-btn.chat-act {
+  background: #334155;
+  color: #f8fafc;
+  border-color: #64748b;
+}

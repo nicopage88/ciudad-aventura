@@ -1,3 +1,4 @@
+// Pokémon Battle Arena System for Ciudad Aventura
 (()=>{
   const style = document.createElement('link');
   style.rel = 'stylesheet';
@@ -78,7 +79,7 @@
   modal.innerHTML = `
     <div class="battle-arena-card">
       <div class="battle-top-bar">
-        <span id="battle-title">⚔️ ARENA POKÉMON · DUELO CON CAMILA</span>
+        <span id="battle-title">⚔️ ARENA POKÉMON · COMBATE</span>
         <button class="battle-close-btn" id="battle-close" type="button" aria-label="Cerrar arena">✕</button>
       </div>
 
@@ -150,6 +151,7 @@
   const resultOverlay = modal.querySelector('#battle-result');
   const btnRematch = modal.querySelector('#btn-rematch');
   const btnQuit = modal.querySelector('#btn-quit');
+  const arenaTitle = modal.querySelector('#battle-title');
 
   // Opponent elements
   const oppName = modal.querySelector('#opp-name');
@@ -176,51 +178,107 @@
 
   btnClose.onclick = closeBattle;
   btnQuit.onclick = closeBattle;
-  btnRematch.onclick = () => startBattle();
+  btnRematch.onclick = () => {
+    if (battleState && battleState.isWild && battleState.wildData) {
+      startBattle(battleState.wildData, { isWild: true, spawnId: battleState.spawnId });
+    } else {
+      startBattle('Camila_Maipu');
+    }
+  };
 
-  // Find best Pokémon from user Pokédex
+  // Find best Pokémon from user Pokédex (Robust data sanitizer)
   function getBestUserPokemon() {
-    const pokedex = window.getPokedex ? window.getPokedex() : {};
-    const caught = Object.values(pokedex).filter(p => p && (p.count > 0 || typeof p === 'object'));
-    if (caught.length === 0) return { ...DEFAULT_STARTER };
+    let pokedex = {};
+    try {
+      pokedex = window.getPokedex ? window.getPokedex() : JSON.parse(localStorage.getItem('ciudad_pokedex') || '{}');
+    } catch {}
 
-    // Sort by CP descending
-    caught.sort((a, b) => (b.cp || b.baseCp || 1000) - (a.cp || a.baseCp || 1000));
-    const best = caught[0];
-    const catalog = window.WILD_POKEMON ? window.WILD_POKEMON.find(w => w.id === best.id) : null;
+    const list = [];
+    for (const [key, val] of Object.entries(pokedex)) {
+      if (!val) continue;
+      const id = Number(val.id || key);
+      if (!id || isNaN(id)) continue;
+      const count = typeof val === 'number' ? val : (val.count || 1);
+      if (count <= 0) continue;
 
-    const moves = (best.moves && best.moves.length > 0) ? best.moves : (catalog?.moves || DEFAULT_STARTER.moves);
-    const cp = best.cp || catalog?.baseCp || 2500;
-    const maxHp = best.hp || catalog?.hp || 200;
-    const level = Math.min(60, Math.max(30, Math.round(cp / 55)));
+      const catalog = window.WILD_POKEMON ? window.WILD_POKEMON.find(w => w.id === id) : null;
+      const name = val.name || catalog?.name || `Pokémon #${id}`;
+      const type = val.type || catalog?.type || 'Normal';
+      const cp = Number(val.cp || catalog?.baseCp || 1800);
+      const hp = Number(val.hp || catalog?.hp || 190);
+      const moves = (val.moves && val.moves.length > 0) ? val.moves : (catalog?.moves || [
+        { name: 'Placaje', power: 45, type: 'Normal' },
+        { name: 'Ataque Rápido', power: 50, type: 'Normal' },
+        { name: 'Golpe Cabeza', power: 65, type: 'Normal' },
+        { name: 'Hiperrayo', power: 85, type: 'Normal' }
+      ]);
+      const level = Math.min(60, Math.max(25, Math.round(cp / 55)));
+      list.push({ id, name, type, cp, maxHp: hp, hp, level, moves });
+    }
 
-    return {
-      id: best.id,
-      name: best.name || catalog?.name || 'Compañero',
-      type: best.type || catalog?.type || 'Normal',
-      level,
-      cp,
-      maxHp,
-      moves
-    };
+    if (list.length === 0) {
+      return { ...DEFAULT_STARTER };
+    }
+
+    // Sort by CP descending (bring strongest into arena)
+    list.sort((a, b) => b.cp - a.cp);
+    return list[0];
   }
 
-  function startBattle(opponentTrainer = 'Camila_Maipu') {
+  function startBattle(target = 'Camila_Maipu', options = {}) {
     resultOverlay.hidden = true;
-    const isCamila = opponentTrainer.includes('Camila');
+    const isWild = Boolean(options.isWild || (typeof target === 'object' && target.id));
+    const isCamila = !isWild && (typeof target === 'string' && target.includes('Camila'));
 
-    // Pick Camila's Pokémon
-    const oppBase = CAMILA_TEAM[Math.floor(Math.random() * CAMILA_TEAM.length)];
+    let oppData = null;
+    let trainerLabel = '';
+    let wildData = null;
+    let spawnId = options.spawnId || null;
+
+    if (isWild) {
+      wildData = (typeof target === 'object') ? target : (window.WILD_POKEMON ? window.WILD_POKEMON.find(p => p.id === Number(target)) : null);
+      if (!wildData) wildData = CAMILA_TEAM[0];
+
+      const cp = Number(wildData.cp || wildData.baseCp || 1800);
+      const hp = Number(wildData.hp || 190);
+      const level = Math.min(60, Math.max(20, Math.round(cp / 55)));
+      const moves = (wildData.moves && wildData.moves.length > 0) ? wildData.moves : [
+        { name: 'Placaje Salvaje', power: 45, type: 'Normal' },
+        { name: 'Ataque Furia', power: 55, type: 'Normal' },
+        { name: 'Mordisco', power: 65, type: 'Siniestro' },
+        { name: 'Hiperrayo', power: 85, type: 'Normal' }
+      ];
+
+      oppData = {
+        id: wildData.id,
+        name: wildData.name,
+        type: wildData.type || 'Normal',
+        level,
+        cp,
+        maxHp: hp,
+        hp,
+        moves
+      };
+      trainerLabel = 'Pokémon Salvaje';
+      arenaTitle.textContent = `⚔️ ARENA · COMBATE CON ${wildData.name.toUpperCase()} SALVAJE`;
+    } else {
+      // Pick Camila or other online trainer
+      const oppBase = CAMILA_TEAM[Math.floor(Math.random() * CAMILA_TEAM.length)];
+      oppData = { ...oppBase, hp: oppBase.maxHp };
+      trainerLabel = isCamila ? 'Entrenadora: Camila' : `Entrenador: ${target}`;
+      arenaTitle.textContent = isCamila ? '⚔️ ARENA POKÉMON · DUELO CON CAMILA' : `⚔️ ARENA · DUELO CON ${target}`;
+    }
+
     const myBase = getBestUserPokemon();
 
     battleState = {
+      isWild,
       isCamila,
-      trainer: isCamila ? 'Camila' : opponentTrainer,
+      wildData,
+      spawnId,
+      trainer: isCamila ? 'Camila' : (isWild ? 'Salvaje' : target),
       turnBusy: false,
-      opp: {
-        ...oppBase,
-        hp: oppBase.maxHp
-      },
+      opp: oppData,
       player: {
         ...myBase,
         hp: myBase.maxHp
@@ -230,9 +288,10 @@
     // Update Opponent HUD
     oppName.textContent = battleState.opp.name;
     oppLvl.textContent = `Nv. ${battleState.opp.level}`;
-    oppTrainer.textContent = `Entrenadora: ${battleState.trainer}`;
+    oppTrainer.textContent = trainerLabel;
     oppCp.textContent = `CP ${battleState.opp.cp}`;
     oppSprite.src = getAnimatedSprite(battleState.opp.id);
+    oppSprite.onerror = () => { oppSprite.src = getStaticSprite(battleState.opp.id); };
     updateHpBars();
 
     // Update Player HUD
@@ -240,24 +299,34 @@
     myLvl.textContent = `Nv. ${battleState.player.level}`;
     myCp.textContent = `CP ${battleState.player.cp}`;
     mySprite.src = getAnimatedSprite(battleState.player.id);
+    mySprite.onerror = () => { mySprite.src = getStaticSprite(battleState.player.id); };
     updateHpBars();
 
     // Render Moves
     renderMoveButtons();
 
-    logBox.textContent = `¡Comienza el duelo! ${battleState.trainer} saca a ${battleState.opp.name} (CP ${battleState.opp.cp}). ¡Elige tu movimiento!`;
+    if (isWild) {
+      logBox.textContent = `¡Un ${battleState.opp.name} salvaje (CP ${battleState.opp.cp}) ruge en la arena! ¡Elige tu ataque!`;
+    } else {
+      logBox.textContent = `¡Comienza el duelo! ${battleState.trainer} saca a ${battleState.opp.name} (CP ${battleState.opp.cp}). ¡Elige tu movimiento!`;
+    }
+
     modal.hidden = false;
 
     if (window.playCry) {
       window.playCry(battleState.opp.id);
     }
 
-    // Send friendly room message from Camila if in room
     if (isCamila && window.show) {
       window.show(`⚔️ ¡Entraste en combate Pokémon con Camila!`);
+    } else if (isWild && window.show) {
+      window.show(`⚔️ ¡Combatiendo contra ${battleState.opp.name} salvaje!`);
     }
   }
-  window.startPokemonBattle = startBattle;
+
+  // Public Battle Launcher APIs
+  window.startPokemonBattle = (target = 'Camila_Maipu', opts = {}) => startBattle(target, opts);
+  window.startPokemonBattleWithWild = (wildData, spawnId = null) => startBattle(wildData, { isWild: true, spawnId });
 
   function updateHpBars() {
     if (!battleState) return;
@@ -305,6 +374,8 @@
     battleState.turnBusy = true;
     setMovesDisabled(true);
 
+    if (window.playClickSound) window.playClickSound();
+
     // Player attack animation
     mySprite.classList.add('attack-lunge');
     setTimeout(() => mySprite.classList.remove('attack-lunge'), 350);
@@ -341,7 +412,9 @@
   function executeOpponentTurn() {
     if (!battleState || battleState.opp.hp <= 0) return;
 
-    const oppMoves = battleState.opp.moves;
+    const oppMoves = (battleState.opp.moves && battleState.opp.moves.length > 0) ? battleState.opp.moves : [
+      { name: 'Golpe', power: 45, type: 'Normal' }
+    ];
     const move = oppMoves[Math.floor(Math.random() * oppMoves.length)];
 
     oppSprite.classList.add('attack-lunge');
@@ -378,14 +451,30 @@
 
   function handleVictory() {
     if (window.playVictorySound) window.playVictorySound();
-    logBox.textContent = `¡${battleState.opp.name} del oponente se debilitó! ¡Has ganado el combate! 🏆`;
     resultOverlay.hidden = false;
-    modal.querySelector('#result-title').textContent = '¡VICTORIA ÉPICA! 🏆';
-    modal.querySelector('#result-title').style.color = '#ffd700';
-    modal.querySelector('#result-desc').textContent = `Derrotaste a ${battleState.trainer} y su ${battleState.opp.name}. Tu ${battleState.player.name} demostró gran poderío en la arena de Maipú.`;
 
-    if (window.show) {
-      window.show(`🏆 ¡Victoria! Venciste al ${battleState.opp.name} de ${battleState.trainer}.`);
+    if (battleState.isWild && battleState.wildData) {
+      logBox.textContent = `¡${battleState.opp.name} se debilitó y fue capturado! 🎉`;
+      modal.querySelector('#result-title').textContent = '¡POKÉMON CAPTURADO! 🏆';
+      modal.querySelector('#result-title').style.color = '#ffd700';
+      modal.querySelector('#result-desc').textContent = `¡Derrotaste a ${battleState.opp.name} en la arena! Se rinde ante tu poder y se sumó a tu Mochila con CP ${battleState.opp.cp}.`;
+
+      // Auto-catch upon victory
+      if (window.addPokemonToPokedex) {
+        window.addPokemonToPokedex(battleState.wildData, battleState.spawnId);
+      }
+      if (window.show) {
+        window.show(`🏆 ¡Victoria! ${battleState.opp.name} capturado tras la batalla.`);
+      }
+    } else {
+      logBox.textContent = `¡${battleState.opp.name} del oponente se debilitó! ¡Has ganado el combate! 🏆`;
+      modal.querySelector('#result-title').textContent = '¡VICTORIA ÉPICA! 🏆';
+      modal.querySelector('#result-title').style.color = '#ffd700';
+      modal.querySelector('#result-desc').textContent = `Derrotaste a ${battleState.trainer} y su ${battleState.opp.name}. Tu ${battleState.player.name} demostró gran poderío en la arena.`;
+
+      if (window.show) {
+        window.show(`🏆 ¡Victoria! Venciste al ${battleState.opp.name} de ${battleState.trainer}.`);
+      }
     }
   }
 
@@ -402,8 +491,14 @@
   }
 
   // Hook battle button in footer dock
-  const dockBattleBtn = document.querySelector('#battle-btn');
-  if (dockBattleBtn) {
-    dockBattleBtn.onclick = () => startBattle('Camila_Maipu');
+  function hookDockBattle() {
+    const dockBattleBtn = document.querySelector('#battle-btn');
+    if (dockBattleBtn) {
+      dockBattleBtn.onclick = () => {
+        if (window.playClickSound) window.playClickSound();
+        startBattle('Camila_Maipu');
+      };
+    }
   }
+  hookDockBattle();
 })();

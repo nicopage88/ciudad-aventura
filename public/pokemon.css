@@ -257,6 +257,20 @@
   transform: translateY(2px);
 }
 
+.poke-btn-battle {
+  grid-column: 1 / -1;
+  background: linear-gradient(180deg, #b91c1c 0%, #7f1d1d 100%);
+  color: #fff !important;
+  border: 2px solid #fca5a5 !important;
+  box-shadow: 0 4px 0 #450a0a;
+  font-size: 0.88rem !important;
+  font-weight: 900 !important;
+}
+
+.poke-btn-battle:hover {
+  background: #dc2626 !important;
+}
+
 .poke-btn-catch {
   background: #e63946;
   color: #fff;
