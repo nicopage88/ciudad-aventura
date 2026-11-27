@@ -1,1 +1,114 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#122a3b"><title>Ciudad Aventura</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""><link rel="stylesheet" href="style.css"></head><body><main class="game"><header><div class="logo"><span>✦</span><div>CIUDAD <b>AVENTURA</b><small>EXPLORA TU BARRIO</small></div></div><div class="counter">★ <strong id="score">0</strong> <span>victorias</span></div></header><div class="map-wrap"><div id="map" aria-label="Mapa de la ciudad"></div><div class="map-shade"></div><div class="location"><span>●</span> <strong id="place">MAIPÚ</strong></div><div class="hint" id="hint">Cargando las calles reales…</div><div id="toast" class="toast" aria-live="polite"></div><button id="play" class="play" hidden>★ JUGAR EN LA PLAZA</button><div class="controls" aria-label="Controles de movimiento"><button class="up" data-dir="up" aria-label="Arriba">▲</button><button class="left" data-dir="left" aria-label="Izquierda">◀</button><button class="down" data-dir="down" aria-label="Abajo">▼</button><button class="right" data-dir="right" aria-label="Derecha">▶</button></div><button id="gps" class="gps" aria-label="Usar mi ubicación">⌖</button></div><footer><div><b>¡Vamos a la plaza!</b><span> Muévete con las flechas y descubre el juego de la plaza.</span></div><button id="reset">Ir cerca de Maipú</button></footer></main><div id="modal" class="modal" hidden><div class="dialog"><div class="dialog-head"><span>★ PLAZA DE MAIPÚ</span><button id="close" aria-label="Cerrar">✕</button></div><h2>El memorice de la plaza</h2><p id="mini-status"></p><div id="board" class="board"></div><button id="again" class="again">Jugar de nuevo</button></div></div><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#122a3b">
+  <title>Ciudad Aventura</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game">
+    <header>
+      <div class="logo">
+        <span>✦</span>
+        <div>CIUDAD <b>AVENTURA</b><small>EXPLORA TU BARRIO</small></div>
+      </div>
+      <div class="counter">★ <strong id="score">0</strong> <span>victorias</span></div>
+    </header>
+
+    <!-- Mapa retro limpio -->
+    <div class="map-wrap">
+      <div id="map" aria-label="Mapa de la ciudad"></div>
+      <div class="map-shade"></div>
+      <div class="location"><span>●</span> <strong id="place">MAIPÚ</strong></div>
+      <div class="hint" id="hint">Cargando las calles reales…</div>
+      <div id="toast" class="toast" aria-live="polite"></div>
+      <button id="play" class="play" hidden>★ JUGAR EN LA PLAZA</button>
+
+      <!-- Controles direccionales para celular / pantalla táctil -->
+      <div class="controls" aria-label="Controles de movimiento">
+        <button class="up" data-dir="up" aria-label="Arriba">▲</button>
+        <button class="left" data-dir="left" aria-label="Izquierda">◀</button>
+        <button class="down" data-dir="down" aria-label="Abajo">▼</button>
+        <button class="right" data-dir="right" aria-label="Derecha">▶</button>
+      </div>
+    </div>
+
+    <!-- Footer organizado con barra de menú y destinos -->
+    <footer class="game-footer">
+      <div class="footer-tip-bar">
+        <div class="footer-tip">
+          💡 <b>¡Vamos a la plaza!</b><span> Muévete con las flechas o táctil para explorar el barrio y encontrar Pokémon.</span>
+        </div>
+      </div>
+
+      <nav class="footer-menu" aria-label="Menú principal de acciones">
+        <!-- Eventos y Colecciones -->
+        <div class="menu-cluster">
+          <button id="christmas-btn" class="footer-btn btn-xmas" title="Ferias Navideñas Chile 2026">
+            <span class="btn-emoji">🎄</span>
+            <span class="btn-label">Ferias 2026</span>
+          </button>
+
+          <button id="pokedex-btn" class="footer-btn btn-poke" title="Mochila y Pokédex">
+            <span class="btn-emoji">🔴</span>
+            <span class="btn-label">Mochila</span>
+            <span class="pokedex-badge" id="pokedex-count">0</span>
+          </button>
+
+          <button id="open-room" class="footer-btn btn-room" title="Jugar con Amigos">
+            <span class="btn-emoji">👋</span>
+            <span class="btn-label">Junta Online</span>
+          </button>
+
+          <button id="rides-open" class="footer-btn btn-rides" title="Aventones" hidden>
+            <span class="btn-emoji">🚗</span>
+            <span class="btn-label">Aventones</span>
+          </button>
+
+          <button id="profile-open" class="footer-btn btn-profile" title="Mi Personaje">
+            <span class="btn-emoji">👤</span>
+            <span class="btn-label">Perfil</span>
+          </button>
+        </div>
+
+        <!-- Destinos y Localización -->
+        <div class="menu-cluster">
+          <button id="reset" class="footer-btn btn-dest" title="Ir a Plaza de Maipú">
+            <span class="btn-emoji">🏛️</span>
+            <span class="btn-label">Plaza Maipú</span>
+          </button>
+
+          <button id="arica-btn" class="footer-btn btn-dest" title="Ir a Plaza Arica">
+            <span class="btn-emoji">📍</span>
+            <span class="btn-label">Plaza Arica</span>
+          </button>
+
+          <button id="gps" class="footer-btn btn-gps" title="Usar mi ubicación GPS">
+            <span class="btn-emoji">⌖</span>
+            <span class="btn-label">Mi GPS</span>
+          </button>
+        </div>
+      </nav>
+    </footer>
+  </main>
+
+  <div id="modal" class="modal" hidden>
+    <div class="dialog">
+      <div class="dialog-head">
+        <span>★ PLAZA DE MAIPÚ</span>
+        <button id="close" aria-label="Cerrar">✕</button>
+      </div>
+      <h2>El memorice de la plaza</h2>
+      <p id="mini-status"></p>
+      <div id="board" class="board"></div>
+      <button id="again" class="again">Jugar de nuevo</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>

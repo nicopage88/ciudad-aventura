@@ -23,7 +23,8 @@ const plazaIcon=L.divIcon({className:'',html:'<div class="plaza-mark">★<span>P
 L.marker(PLAZA,{icon:plazaIcon,interactive:false}).addTo(map);
 const aricaIcon=L.divIcon({className:'',html:'<div class="plaza-mark">★<span>PLAZA ARICA</span></div>',iconSize:[80,50],iconAnchor:[40,25]});
 L.marker(ARICA,{icon:aricaIcon,interactive:false}).addTo(map);
-const goArica=document.createElement('button');goArica.className='arica-button';goArica.textContent='📍 PLAZA ARICA';goArica.onclick=()=>{start([ARICA.lat+.0006,ARICA.lng]);show('¡Llegaste cerca de Plaza Arica!')};document.querySelector('.map-wrap').append(goArica);
+const aricaBtn=document.querySelector('#arica-btn');
+if(aricaBtn){aricaBtn.onclick=()=>{start([ARICA.lat+.0006,ARICA.lng]);show('¡Llegaste cerca de Plaza Arica!')}}
 function update(){window.pos=pos;let dm=Math.round(pos.distanceTo(PLAZA)),da=Math.round(pos.distanceTo(ARICA));let d=Math.min(dm,da),title=da<dm?'PLAZA ARICA':'PLAZA DE MAIPÚ';place.textContent=d<60?title:'A '+d+' M DE '+title;document.querySelector('#play').hidden=dm>=60;window.dispatchEvent(new CustomEvent('city-player-moved',{detail:{lat:pos.lat,lng:pos.lng}}))}
 function start(latlng){pos=L.latLng(latlng);window.pos=pos;player.setLatLng(pos);map.setView(pos,18);update();loadWorld()}
 window.start=start;

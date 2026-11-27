@@ -131,11 +131,14 @@
   let activeFairArrival = null;
 
   // HUD Button: 🎄 FERIAS NAVIDEÑAS 2026
-  const christmasHudBtn = document.createElement('button');
-  christmasHudBtn.className = 'christmas-launch';
-  christmasHudBtn.id = 'christmas-btn';
-  christmasHudBtn.innerHTML = '🎄 FERIAS NAVIDEÑAS 2026';
-  document.querySelector('.map-wrap')?.append(christmasHudBtn);
+  let christmasHudBtn = document.querySelector('#christmas-btn');
+  if (!christmasHudBtn) {
+    christmasHudBtn = document.createElement('button');
+    christmasHudBtn.className = 'christmas-launch';
+    christmasHudBtn.id = 'christmas-btn';
+    christmasHudBtn.innerHTML = '🎄 FERIAS NAVIDEÑAS 2026';
+    document.querySelector('.map-wrap')?.append(christmasHudBtn);
+  }
 
   // Arrival banner (shown when player is at the fair)
   const arrivalBanner = document.createElement('button');

@@ -58,11 +58,17 @@
   let berryFed = false;
 
   // UI Setup
-  const hudButton = document.createElement('button');
-  hudButton.className = 'pokedex-launch';
-  hudButton.id = 'pokedex-btn';
-  hudButton.innerHTML = `🔴 MOCHILA <span class="pokedex-badge" id="pokedex-count">${caughtCount}</span>`;
-  document.querySelector('.map-wrap')?.append(hudButton);
+  let hudButton = document.querySelector('#pokedex-btn');
+  if (!hudButton) {
+    hudButton = document.createElement('button');
+    hudButton.className = 'pokedex-launch';
+    hudButton.id = 'pokedex-btn';
+    hudButton.innerHTML = `🔴 MOCHILA <span class="pokedex-badge" id="pokedex-count">${caughtCount}</span>`;
+    document.querySelector('.map-wrap')?.append(hudButton);
+  } else {
+    const badge = hudButton.querySelector('#pokedex-count');
+    if (badge) badge.textContent = caughtCount;
+  }
 
   const modalOverlay = document.createElement('div');
   modalOverlay.className = 'poke-modal-overlay';
