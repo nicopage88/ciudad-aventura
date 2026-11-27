@@ -258,6 +258,82 @@
     });
   }
 
+  // Local festive attractions in Maipú and Plaza Arica
+  const LOCAL_DECORATIONS = [
+    {
+      id: 'maipu-grand-tree',
+      name: 'Gran Árbol Navideño de Maipú',
+      tag: 'Árbol Gigante',
+      icon: '🎄',
+      type: 'tree',
+      lat: -33.50985,
+      lng: -70.75685,
+      desc: 'El monumental árbol de Navidad de Maipú, decorado con miles de luces doradas, esferas rojas y una gran estrella en la cima.',
+      actionTitle: '✨ Encender Luces y Pedir Deseo',
+      actionSuccess: '¡Las luces del gran árbol brillaron con fuerza! Tu deseo navideño subió al cielo ⭐'
+    },
+    {
+      id: 'maipu-stall-pan',
+      name: 'Puesto Pan de Pascua y Cola de Mono',
+      tag: 'Tradición',
+      icon: '☕',
+      type: 'stall',
+      lat: -33.50965,
+      lng: -70.75675,
+      desc: 'Delicioso pan de pascua artesanal con nueces y almendras, acompañado de cola de mono heladita.',
+      actionTitle: '🥤 Servirse Cola de Mono (+Velocidad)',
+      actionSuccess: '¡Qué delicia! Quedaste con energía navideña para recorrer más rápido la ciudad ⚡'
+    },
+    {
+      id: 'maipu-stall-toys',
+      name: 'Bazar de Regalos y Juguetes',
+      tag: 'Feria',
+      icon: '🎁',
+      type: 'stall',
+      lat: -33.50980,
+      lng: -70.75730,
+      desc: 'Puestos de juguetes clásicos, adornos navideños hechos a mano y regalos para la familia.',
+      actionTitle: '🎁 Ver Regalo Sorpresa',
+      actionSuccess: '¡Recibiste un pack de adornos y regalitos de la feria! ⭐'
+    },
+    {
+      id: 'maipu-stall-santa',
+      name: 'Casita y Buzón del Viejito Pascuero',
+      tag: 'Polo Norte',
+      icon: '🎅',
+      type: 'stall',
+      lat: -33.51030,
+      lng: -70.75720,
+      desc: 'El buzón directo al Polo Norte para dejar tu carta y deseos para el 2026.',
+      actionTitle: '📮 Dejar Carta en el Buzón',
+      actionSuccess: '¡Tu carta fue depositada en el buzón oficial de Santa! 💌'
+    },
+    {
+      id: 'maipu-stall-churros',
+      name: 'Churrería y Dulces Navideños',
+      tag: 'Repostería',
+      icon: '🍪',
+      type: 'stall',
+      lat: -33.51035,
+      lng: -70.75665,
+      desc: 'Churros calientes rellenos de manjar casero y galletas de jengibre navideñas.',
+      actionTitle: '🍪 Degustar Churros con Manjar',
+      actionSuccess: '¡Churros crujientes con manjar! Un clásico infaltable de la plaza 😋'
+    },
+    {
+      id: 'arica-tree',
+      name: 'Árbol Navideño Plaza Arica',
+      tag: 'Árbol Barrial',
+      icon: '🎄',
+      type: 'tree',
+      lat: -33.50135,
+      lng: -70.76405,
+      desc: 'Hermoso arbolito comunitario adornado con luces y guirnaldas por los vecinos de la Plaza Arica.',
+      actionTitle: '🌟 Colocar un Adorno',
+      actionSuccess: '¡Añadiste una estrella brillante al arbolito de Plaza Arica! ✨'
+    }
+  ];
+
   // Create Christmas Marker on map
   function createChristmasMarker(fair) {
     const html = `
@@ -276,9 +352,52 @@
     });
   }
 
-  // Plot fairs on map
+  function createGrandTreeMarker(item) {
+    const html = `
+      <div class="christmas-grand-tree">
+        <div class="grand-tree-wrap">
+          <div class="grand-tree-star">⭐</div>
+          <div class="grand-tree-icon">🎄</div>
+          <div class="grand-tree-presents">🎁🎁</div>
+        </div>
+        <div class="tree-tag">
+          <span>★ ${item.name}</span>
+        </div>
+      </div>
+    `;
+    return L.divIcon({
+      className: '',
+      html,
+      iconSize: [130, 80],
+      iconAnchor: [65, 70]
+    });
+  }
+
+  function createStallMarker(item) {
+    const html = `
+      <div class="christmas-stall-marker">
+        <div class="stall-kiosk">
+          <div class="stall-roof"></div>
+          <span>${item.icon}</span>
+        </div>
+        <div class="stall-tag">
+          <span>${item.name}</span>
+        </div>
+      </div>
+    `;
+    return L.divIcon({
+      className: '',
+      html,
+      iconSize: [110, 68],
+      iconAnchor: [55, 54]
+    });
+  }
+
+  // Plot fairs and local decorations on map
   function plotFairs() {
     if (!window.map) return;
+    
+    // Regional Fairs
     CHILEAN_FAIRS.forEach(fair => {
       if (!fairMarkers.has(fair.id)) {
         const marker = L.marker([fair.lat, fair.lng], {
@@ -293,6 +412,67 @@
         fairMarkers.set(fair.id, marker);
       }
     });
+
+    // Local festive decorations (Trees, Stalls)
+    LOCAL_DECORATIONS.forEach(item => {
+      if (!fairMarkers.has(item.id)) {
+        const icon = item.type === 'tree' ? createGrandTreeMarker(item) : createStallMarker(item);
+        const marker = L.marker([item.lat, item.lng], {
+          icon,
+          zIndexOffset: 860
+        }).addTo(window.map);
+
+        marker.on('click', () => {
+          openLocalDecorationModal(item);
+        });
+
+        fairMarkers.set(item.id, marker);
+      }
+    });
+  }
+
+  // Modal for local festive stalls & trees
+  function openLocalDecorationModal(item) {
+    const dialog = document.createElement('div');
+    dialog.className = 'christmas-modal';
+    dialog.innerHTML = `
+      <div class="christmas-dialog">
+        <div class="christmas-dialog-header">
+          <strong>${item.icon} ${item.name.toUpperCase()}</strong>
+          <button class="christmas-dialog-close" id="dec-close">✕</button>
+        </div>
+        <span style="display: inline-block; background: #e8f5e9; color: #1b4332; font-weight: 800; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; margin-bottom: 10px;">
+          📍 Plaza de Maipú · Feria Navideña 2026
+        </span>
+        <p style="font-size: 0.85rem; color: #374151; line-height: 1.45; margin-bottom: 14px;">
+          ${item.desc}
+        </p>
+        <div style="text-align: center; margin-bottom: 14px;">
+          <button class="fair-goto-btn" id="dec-action" style="padding: 11px 18px; font-size: 0.85rem;">${item.actionTitle}</button>
+        </div>
+        <p id="dec-status" style="font-size: 0.8rem; font-weight: 800; color: #2d6a4f; text-align: center; min-height: 20px;"></p>
+        <button class="christmas-gps-btn" id="dec-done" style="width: 100%; margin-top: 6px;">Cerrar</button>
+      </div>
+    `;
+    document.body.append(dialog);
+
+    const close = () => dialog.remove();
+    dialog.querySelector('#dec-close').onclick = close;
+    dialog.querySelector('#dec-done').onclick = close;
+
+    const actionBtn = dialog.querySelector('#dec-action');
+    const statusText = dialog.querySelector('#dec-status');
+
+    actionBtn.onclick = () => {
+      statusText.textContent = item.actionSuccess;
+      if (item.id === 'maipu-stall-pan') {
+        window.citySpeedBoost = 1.4;
+        setTimeout(() => { window.citySpeedBoost = 1.0; }, 120000);
+      }
+      if (window.show) window.show(item.actionSuccess);
+      actionBtn.disabled = true;
+      actionBtn.style.opacity = '0.6';
+    };
   }
 
   // Open interactive fair activity modal
@@ -482,6 +662,25 @@
 
     plotFairs();
     checkFairProximity(window.pos);
+
+    // Subtle Snow Toggle Button
+    let snowBtn = document.querySelector('#snow-toggle-btn');
+    if (!snowBtn) {
+      snowBtn = document.createElement('button');
+      snowBtn.className = 'snow-toggle-btn active';
+      snowBtn.id = 'snow-toggle-btn';
+      snowBtn.innerHTML = '❄️ Nieve [ON]';
+      document.querySelector('.map-wrap')?.append(snowBtn);
+    }
+
+    // Auto-start gentle snowfall
+    toggleSnowfall();
+
+    snowBtn.onclick = () => {
+      toggleSnowfall();
+      snowBtn.classList.toggle('active', isSnowing);
+      snowBtn.innerHTML = isSnowing ? '❄️ Nieve [ON]' : '❄️ Nieve [OFF]';
+    };
 
     window.addEventListener('city-player-moved', (e) => {
       if (e.detail) {

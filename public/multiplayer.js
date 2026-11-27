@@ -32,8 +32,82 @@ window.addEventListener('city-profile-changed',e=>{if(connected&&(!e.detail||e.d
 window.cityProfileReady.then(()=>{if(room&&/^[a-zA-Z0-9_-]{8,64}$/.test(room)){if(window.cityProfile&&!connected){q('#join-room').click();if(window.show)window.show('¡Te uniste automáticamente a la junta!')}else if(!window.cityProfile){if(window.show)window.show('👋 ¡Te invitaron a una junta! Inicia sesión en Perfil.');panel.hidden=false}}});
 q('#copy-room').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);q('#copy-room').textContent='¡Enlace copiado!';setTimeout(()=>{q('#copy-room').textContent='Copiar invitación';panel.hidden=true},1200)}catch{window.prompt('Copia este enlace para tu amigo:',location.href)}};
 q('#chat-form').onsubmit=e=>{e.preventDefault();const input=q('#chat-text'),msg=input.value.trim();if(msg){send(msg);input.value='';panel.hidden=true;show('Mensaje listo para enviar')}};
-function playerIcon(name,avatar){let root=document.createElement('div');root.className='friend-marker';let img=document.createElement('img');img.src='data:image/svg+xml,'+encodeURIComponent(window.makeCityAvatar(avatar));img.className='sprite';let label=document.createElement('span');label.textContent=name;root.append(label,img);return L.divIcon({className:'',html:root.outerHTML,iconSize:[40,52],iconAnchor:[20,45]})}
+const playerRecentMsgs=new Map();
+function playerIcon(name,avatar,bubbleMsg){
+  let root=document.createElement('div');
+  root.className='friend-marker';
+  if(bubbleMsg){
+    let b=document.createElement('div');
+    b.className='player-bubble';
+    b.textContent=bubbleMsg;
+    root.append(b);
+  }
+  let img=document.createElement('img');
+  img.src='data:image/svg+xml,'+encodeURIComponent(window.makeCityAvatar(avatar));
+  img.className='sprite';
+  let label=document.createElement('span');
+  label.textContent=name;
+  root.append(label,img);
+  return L.divIcon({className:'friend-marker-wrap',html:root.outerHTML,iconSize:[40,52],iconAnchor:[20,45]});
+}
 function friendMenu(p){const box=document.createElement('div');box.className='friend-menu';const title=document.createElement('strong');title.textContent=p.name;box.append(title);for(const [label,type] of [['👋 Saludar','saludo'],['¿Qué querís?','pregunta'],['¿Qué pasa, rey?','rey'],['¿Qué necesitái?','necesidad'],['📍 Invitar a juntarse','invitar'],['🤝 Formar junta','junta']]){let b=document.createElement('button');b.textContent=label;b.onclick=()=>{send('@@junta:'+JSON.stringify({to:p.player,type}));map.closePopup();show(type==='saludo'?'¡Saludo enviado!':'Invitación enviada')};box.append(b)}return box}
-async function sync(){if(!connected||busy)return;busy=true;const message=pending.shift()||'';try{const response=await fetch('/api/room',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room,id:player,name,lat:pos.lat,lng:pos.lng,message})});if(!response.ok)throw Error('http');const data=await response.json();status.textContent='● '+data.players.length+' en la sala';let seen=new Set();data.players.filter(p=>p.player!==player).forEach(p=>{seen.add(p.player);let avatar={};try{avatar=JSON.parse(p.avatar||'{}')}catch{}let m=markers.get(p.player);if(!m){m=L.marker([p.lat,p.lng],{icon:playerIcon(p.name,avatar),zIndexOffset:999}).addTo(map);m.bindPopup(()=>friendMenu(p));m._avatar=p.avatar;markers.set(p.player,m)}else{m.setLatLng([p.lat,p.lng]);if(m._avatar!==p.avatar){m.setIcon(playerIcon(p.name,avatar));m._avatar=p.avatar}}});for(const [id,m] of markers)if(!seen.has(id)){map.removeLayer(m);markers.delete(id)}for(const item of data.messages.slice().reverse()){if(!initial&&!known.has(item.id)&&item.player!==player)notify(item);known.add(item.id)}initial=false;if(known.size>200)known=new Set(data.messages.map(m=>m.id))}catch{if(message)pending.unshift(message);status.textContent='Sin conexión, reintentando…'}finally{busy=false}}
+async function sync(){
+  if(!connected||busy)return;
+  busy=true;
+  const message=pending.shift()||'';
+  try{
+    const response=await fetch('/api/room',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({room,id:player,name,lat:pos.lat,lng:pos.lng,message})});
+    if(!response.ok)throw Error('http');
+    const data=await response.json();
+    status.textContent='● '+data.players.length+' en la sala';
+    
+    // Store recent chat messages for speech bubbles
+    if(data.messages){
+      const now=Date.now();
+      for(const item of data.messages){
+        if(!item.body.startsWith('@@junta:')&&(!playerRecentMsgs.has(item.player)||(now-(item.created||now)<15000))){
+          playerRecentMsgs.set(item.player,{text:item.body,created:item.created||now});
+        }
+      }
+    }
+
+    let seen=new Set();
+    const now=Date.now();
+    data.players.filter(p=>p.player!==player).forEach(p=>{
+      seen.add(p.player);
+      let avatar={};
+      try{avatar=JSON.parse(p.avatar||'{}')}catch{}
+      const recent=playerRecentMsgs.get(p.player);
+      const bubbleText=(recent&&(now-recent.created<14000))?recent.text:'';
+      const iconKey=p.avatar+'|'+bubbleText;
+
+      let m=markers.get(p.player);
+      if(!m){
+        m=L.marker([p.lat,p.lng],{icon:playerIcon(p.name,avatar,bubbleText),zIndexOffset:999}).addTo(map);
+        m.bindPopup(()=>friendMenu(p));
+        m._iconKey=iconKey;
+        markers.set(p.player,m);
+      }else{
+        m.setLatLng([p.lat,p.lng]);
+        if(m._iconKey!==iconKey){
+          m.setIcon(playerIcon(p.name,avatar,bubbleText));
+          m._iconKey=iconKey;
+        }
+      }
+    });
+    for(const [id,m] of markers)if(!seen.has(id)){map.removeLayer(m);markers.delete(id)}
+    for(const item of data.messages.slice().reverse()){
+      if(!initial&&!known.has(item.id)&&item.player!==player)notify(item);
+      known.add(item.id);
+    }
+    initial=false;
+    if(known.size>200)known=new Set(data.messages.map(m=>m.id));
+  }catch{
+    if(message)pending.unshift(message);
+    status.textContent='Sin conexión, reintentando…';
+  }finally{
+    busy=false;
+  }
+}
 setInterval(sync,1800);
 })();
