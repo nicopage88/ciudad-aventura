@@ -1,7 +1,7 @@
 import handler from "vinext/server/fetch-handler";
 import { runWithConnectorBinding } from "../lib/connector-context";
 import type { ConnectorBinding } from "../lib/connector-contract.mjs";
-import { accountApi, currentAccount, cleanAvatar } from "./accounts";
+import { accountApi, currentAccount, cleanAvatar, publicOrigin } from "./accounts";
 
 const worker = {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
@@ -9,7 +9,7 @@ const worker = {
     if (url.pathname === "/") return Response.redirect(new URL("/game" + url.search + url.hash, url), 302);
     if (url.pathname === "/api/account") return accountApi(request,(env as unknown as {DB:D1Database}).DB);
     if (url.pathname === "/api/rides") {
-      if(request.method!=="POST" || request.headers.get("origin")!==url.origin) return new Response("Forbidden",{status:403});
+      if(request.method!=="POST" || request.headers.get("origin")!==publicOrigin(request)) return new Response("Forbidden",{status:403});
       const db=(env as unknown as {DB:D1Database}).DB;
       const account=await currentAccount(request,db);if(!account)return Response.json({error:"Inicia sesión primero."},{status:401});
       let input:Record<string,unknown>;try{input=await request.json()}catch{return new Response("Datos inválidos",{status:400})}
@@ -28,7 +28,7 @@ const worker = {
     }
     if (url.pathname === "/api/room") {
       if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
-      if (request.headers.get("origin") !== url.origin) return new Response("Forbidden", { status: 403 });
+      if (request.headers.get("origin") !== publicOrigin(request)) return new Response("Forbidden", { status: 403 });
       const db = (env as unknown as { DB: D1Database }).DB;
       if (!db) return new Response("Unavailable", { status: 503 });
       const account=await currentAccount(request,db);if(!account)return Response.json({error:"Inicia sesión primero."},{status:401});
