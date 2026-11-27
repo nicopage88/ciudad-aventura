@@ -2,7 +2,7 @@
 (()=>{
   const style = document.createElement('link');
   style.rel = 'stylesheet';
-  style.href = 'pokemon.css';
+  style.href = 'pokemon.css?v=20261127_02';
   document.head.append(style);
 
   // Curated GitAnimals catalog with authentic GitAnimals.org animated vector sprites
@@ -404,6 +404,35 @@
   };
 
   let pokedex = loadPokedex();
+  // Migrate / Clean any old Pokemon entries without petId
+  let hasOld = false;
+  for (const [key, val] of Object.entries(pokedex)) {
+    if (!val || !val.petId || typeof val === 'number') {
+      delete pokedex[key];
+      hasOld = true;
+    }
+  }
+  // Grant initial starter GitAnimal if empty
+  if (Object.keys(pokedex).length === 0) {
+    const starter = GIT_ANIMALS.find(a => a.id === 103) || GIT_ANIMALS[0];
+    pokedex[starter.id] = {
+      id: starter.id,
+      petId: starter.petId,
+      name: starter.name,
+      emoji: starter.emoji || '🐕',
+      type: starter.type,
+      color: starter.color || '#e76f51',
+      rarity: starter.rarity || 'epic',
+      cp: starter.baseCp || 3500,
+      hp: starter.hp || 230,
+      maxHp: starter.hp || 230,
+      moves: starter.moves || [],
+      count: 1
+    };
+    savePokedex(pokedex);
+  } else if (hasOld) {
+    savePokedex(pokedex);
+  }
   let caughtCount = Object.keys(pokedex).length;
   window.getPokedex = () => pokedex;
 

@@ -63,9 +63,9 @@ function friendMenu(p){
   title.textContent=p.name;
   box.append(title);
 
-  // Direct Pokémon Battle button
+  // Direct Pet Battle button
   const battleBtn=document.createElement('button');
-  battleBtn.textContent='⚔️ Batalla Pokémon';
+  battleBtn.textContent='⚔️ Duelo de Mascotas GitAnimals';
   battleBtn.style.cssText='background:#991b1b !important; color:#fff !important; font-weight:900 !important; margin-bottom:5px;';
   battleBtn.onclick=()=>{
     map.closePopup();

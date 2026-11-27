@@ -65,7 +65,7 @@
     box.innerHTML = `
       <div class="camila-popup-head">
         <strong style="color: #ffd166; font-size: 0.95rem;">🏍️ Camila de Maipú</strong>
-        <span style="font-size: 0.72rem; color: #a8dadc;">Entrenadora Pokémon</span>
+        <span style="font-size: 0.72rem; color: #a8dadc;">Entrenadora GitAnimals</span>
       </div>
       <p style="margin: 8px 0; font-size: 0.8rem; line-height: 1.35; color: #f1f5f9;">
         "${currentBubble}"
@@ -165,7 +165,7 @@
     if (btn) {
       btn.onclick = () => {
         if (window.playClickSound) window.playClickSound();
-        if (window.show) window.show('⚔️ ¡Desafiaste a Camila a un duelo Pokémon!');
+        if (window.show) window.show('⚔️ ¡Desafiaste a Camila a un duelo de Mascotas GitAnimals!');
         if (window.startPokemonBattle) {
           window.startPokemonBattle('Camila_Maipu');
         }

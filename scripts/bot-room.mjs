@@ -56,14 +56,15 @@ async function main() {
 
   const SPONTANEOUS_MESSAGES = [
     '¡Si quieres te llevo en mi moto! 🏍️💨',
-    '¡Quiero jugar una partida rápida de poke! 🔴✨',
+    '¡Quiero jugar una partida rápida de GitAnimals! 🐾✨',
     '¡Qué linda se ve la feria navideña de Maipú! 🎄⭐',
-    '¡Atrapé un Pikachu recién en la esquina! ⚡',
+    '¡Atrapé un Capibara gigante recién en la esquina! 🦫',
     '¡Wena! ¿Vamos por un pan de pascua y cola de mono? ☕🎅',
     '¡Súbete, te doy un aventón a Plaza Arica! 🚗💨',
-    '¿Alguien para echar un memorice en la plaza? ¡Te desafío! 🧠🏆',
+    '¿Alguien para echar un duelo de mascotas en la plaza? ¡Te desafío! ⚔️🏆',
     '¡Qué lindo quedó el árbol gigante en el centro de la plaza! 🌟',
-    '¿Viste los nuevos puestos navideños? Hay cosas bacanes 🎁'
+    '¿Viste los nuevos puestos navideños? Hay cosas bacanes 🎁',
+    '¡Mira ese Shiba Inu perrón corriendo por Maipú! 🐕💨'
   ];
 
   let spontaneousIndex = 0;
@@ -153,11 +154,11 @@ async function main() {
                 if (event.type === 'saludo') {
                   pendingMessage = `¡Wena ${latest.name}! ¿Cómo va todo por Maipú? 👋`;
                 } else if (event.type === 'pregunta') {
-                  pendingMessage = `¡Aquí buscando Pokémon en las calles y viendo las ferias navideñas! 🎄✨`;
+                  pendingMessage = `¡Aquí buscando animalitos de GitAnimals en las calles y viendo las ferias navideñas! 🎄✨`;
                 } else if (event.type === 'rey') {
-                  pendingMessage = `¡Todo bacán mi rey! ¿Pillaste algún Pokémon raro por acá? 👑`;
+                  pendingMessage = `¡Todo bacán mi rey! ¿Pillaste algún animalito raro como el Capibara por acá? 👑`;
                 } else if (event.type === 'necesidad') {
-                  pendingMessage = `Necesito un pancito de pascua y unas Pokébolas en la feria jaja ☕`;
+                  pendingMessage = `Necesito un pancito de pascua y unas zanahorias para los animalitos jaja ☕`;
                 } else if (event.type === 'invitar' || event.type === 'junta') {
                   pendingMessage = `@@junta:${JSON.stringify({ to: latest.player, type: 'aceptado' })}`;
                   setTimeout(() => {
@@ -180,9 +181,9 @@ async function main() {
             } else if (lower.includes('moto') || lower.includes('auto') || lower.includes('viaje')) {
               pendingMessage = `¡Sí quieres te llevo en mi moto! 🏍️💨 Súbete cuando quieras`;
             } else if (lower.includes('pelea') || lower.includes('batalla') || lower.includes('duelo') || lower.includes('combate')) {
-              pendingMessage = `¡Acepto el duelo Pokémon! ⚔️ Mi Lucario está listo para el combate 🥊`;
-            } else if (lower.includes('pokemon') || lower.includes('pokémon') || lower.includes('poke')) {
-              pendingMessage = `¡Quiero jugar una partida rápida de poke contigo! 🔴✨`;
+              pendingMessage = `¡Acepto el duelo de mascotas! ⚔️ Mi Capibara Gigante está listo para el combate 🦫`;
+            } else if (lower.includes('gitanimal') || lower.includes('animal') || lower.includes('mascota') || lower.includes('capibara') || lower.includes('poke')) {
+              pendingMessage = `¡Quiero jugar un duelo de GitAnimals contigo! 🐾✨`;
             } else if (lower.includes('navidad') || lower.includes('feria') || lower.includes('arbol')) {
               pendingMessage = `¿Viste qué lindo el árbol gigante de Navidad en la plaza? ¡Está hermoso! 🎄⭐`;
             } else {
