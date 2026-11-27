@@ -35,6 +35,10 @@ const localBindingConfig = {
         },
       ]
     : [],
+  assets: {
+    directory: "../client",
+    binding: "ASSETS",
+  },
 };
 
 export default defineConfig(async ({ command }) => {

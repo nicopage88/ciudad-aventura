@@ -1,0 +1,327 @@
+/* Ferias Navideñas Chile 2026 Retro Styling */
+.christmas-launch {
+  position: absolute;
+  z-index: 500;
+  top: 135px;
+  left: 14px;
+  border: 3px solid #ffe8d6;
+  background: linear-gradient(180deg, #d90429 0%, #a0001e 100%);
+  color: #fff;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font: 900 0.75rem Nunito, sans-serif;
+  box-shadow: 0 4px 0 #590d22, 0 0 10px rgba(217, 4, 41, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.1s, filter 0.2s;
+  animation: christmas-glow 2s infinite alternate;
+}
+
+@keyframes christmas-glow {
+  0% { box-shadow: 0 4px 0 #590d22, 0 0 6px rgba(217, 4, 41, 0.3); }
+  100% { box-shadow: 0 4px 0 #590d22, 0 0 16px rgba(255, 215, 0, 0.7); }
+}
+
+.christmas-launch:hover {
+  filter: brightness(1.15);
+}
+
+.christmas-launch:active {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+/* Christmas Map Marker */
+.christmas-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  filter: drop-shadow(0 4px 5px rgba(0,0,0,0.4));
+  animation: tree-shimmer 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes tree-shimmer {
+  0% { transform: scale(1); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)) drop-shadow(0 0 4px rgba(255,215,0,0.3)); }
+  100% { transform: scale(1.08) translateY(-4px); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)) drop-shadow(0 0 10px rgba(255,215,0,0.8)); }
+}
+
+.christmas-marker .tree-icon {
+  font-size: 38px;
+  line-height: 1;
+}
+
+.christmas-marker .fair-label {
+  background: rgba(18, 38, 58, 0.94);
+  color: #ffe6a7;
+  border: 1.5px solid #d90429;
+  border-radius: 6px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  padding: 3px 6px;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 #0b1d2e;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.christmas-marker .fair-dist {
+  color: #70e000;
+  font-size: 6.5px;
+}
+
+/* Christmas Modal & Cards */
+.christmas-modal {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  background: rgba(8, 20, 28, 0.88);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  backdrop-filter: blur(3px);
+}
+
+.christmas-modal[hidden] {
+  display: none !important;
+}
+
+.christmas-dialog {
+  width: min(520px, 100%);
+  max-height: 90vh;
+  background: #fffdf5;
+  color: #212529;
+  border: 5px solid #2d6a4f;
+  border-radius: 16px;
+  box-shadow: 0 12px 0 #1b4332, 0 20px 45px rgba(0,0,0,0.6);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.christmas-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px dashed #b7c5ce;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.christmas-dialog-header strong {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.8rem;
+  color: #d90429;
+}
+
+.christmas-dialog-close {
+  border: 0;
+  background: transparent;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #495057;
+  padding: 2px 8px;
+}
+
+.christmas-search-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.christmas-search-input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 2px solid #52b788;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: #fff;
+  color: #212529;
+}
+
+.christmas-gps-btn {
+  background: #2d6a4f;
+  color: #fff;
+  border: 2px solid #1b4332;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: 800 0.75rem Nunito, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 3px 0 #081c15;
+}
+
+.christmas-fairs-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px;
+}
+
+.fair-card {
+  background: #fff;
+  border: 2px solid #d8f3dc;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: 0 3px 0 #b7e4c7;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.fair-card:hover {
+  border-color: #2d6a4f;
+  transform: translateY(-2px);
+}
+
+.fair-card.closest {
+  border-color: #d90429;
+  background: #fff5f5;
+  box-shadow: 0 3px 0 #ef233c;
+}
+
+.fair-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.fair-card-head strong {
+  font-size: 0.95rem;
+  color: #1b4332;
+}
+
+.fair-card-distance {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7.5px;
+  color: #d90429;
+  background: #fee;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #fcc;
+}
+
+.fair-card-commune {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #52b788;
+}
+
+.fair-card-desc {
+  font-size: 0.78rem;
+  color: #495057;
+  line-height: 1.35;
+}
+
+.fair-card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #e9ecef;
+}
+
+.fair-hours {
+  font-size: 0.72rem;
+  color: #6c757d;
+  font-weight: 700;
+}
+
+.fair-goto-btn {
+  background: #d90429;
+  color: #fff;
+  border: 2px solid #9d0208;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font: 800 0.75rem Nunito, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #590d22;
+}
+
+.fair-goto-btn:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+/* Fair Arrival Interactive Panel */
+.fair-active-banner {
+  position: absolute;
+  z-index: 500;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #d90429 0%, #9d0208 100%);
+  color: #fff;
+  border: 3px solid #ffba08;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font: 900 0.8rem 'Press Start 2P', monospace;
+  box-shadow: 0 5px 0 #370617, 0 0 20px rgba(255, 186, 8, 0.7);
+  cursor: pointer;
+  animation: banner-bounce 1.5s infinite alternate;
+  white-space: nowrap;
+}
+
+@keyframes banner-bounce {
+  0% { transform: translateX(-50%) translateY(0); }
+  100% { transform: translateX(-50%) translateY(-5px); }
+}
+
+.fair-activity-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.fair-activity-btn {
+  background: #fdf0d5;
+  border: 2px solid #c1121f;
+  border-radius: 8px;
+  padding: 12px 10px;
+  font: 800 0.75rem Nunito, sans-serif;
+  color: #780000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #669bbc;
+  text-align: center;
+}
+
+.fair-activity-btn .act-icon {
+  font-size: 24px;
+}
+
+.fair-activity-btn:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+/* Pixel Snowfall Canvas */
+.snowfall-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 450;
+}
+
+@media (max-width: 600px) {
+  .christmas-launch {
+    top: 145px;
+    left: 10px;
+    font-size: 0.65rem;
+    padding: 7px 10px;
+  }
+}

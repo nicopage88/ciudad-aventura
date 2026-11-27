@@ -6,7 +6,7 @@ import { accountApi, currentAccount, cleanAvatar } from "./accounts";
 const worker = {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
     const url = new URL(request.url);
-    if (url.pathname === "/") return Response.redirect(new URL("/game.html" + url.search + url.hash, url), 302);
+    if (url.pathname === "/") return Response.redirect(new URL("/game" + url.search + url.hash, url), 302);
     if (url.pathname === "/api/account") return accountApi(request,(env as unknown as {DB:D1Database}).DB);
     if (url.pathname === "/api/rides") {
       if(request.method!=="POST" || request.headers.get("origin")!==url.origin) return new Response("Forbidden",{status:403});
@@ -67,7 +67,11 @@ const worker = {
         },
       };
     }
-    return runWithConnectorBinding(binding, () => handler.fetch(request, env, ctx));
+    const response = await runWithConnectorBinding(binding, () => handler.fetch(request, env, ctx));
+    if (response.headers.has("x-vinext-static-file") && (env as unknown as { ASSETS?: Fetcher }).ASSETS) {
+      return (env as unknown as { ASSETS: Fetcher }).ASSETS.fetch(request);
+    }
+    return response;
   },
 };
 
