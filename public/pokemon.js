@@ -62,8 +62,14 @@
     return { isPlaza: false, isRemote: false, name: 'Calles del barrio' };
   }
 
-  // Helper URLs
-  const getAnimatedSprite = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`;
+  // Helper URLs (Showdown Edge CDN + PokeAPI fallback)
+  const getAnimatedSprite = (id, name) => {
+    if (name) {
+      const slug = String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
+      return `https://play.pokemonshowdown.com/sprites/ani/${slug}.gif`;
+    }
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`;
+  };
   const getStaticSprite = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
   // Persistent Pokédex state
@@ -179,7 +185,7 @@
 
     modalBody.innerHTML = `
       <div class="poke-stage" id="encounter-stage">
-        <img class="encounter-sprite" id="encounter-sprite" src="${getAnimatedSprite(spawn.data.id)}" alt="${spawn.data.name}" onerror="this.src='${getStaticSprite(spawn.data.id)}'">
+        <img class="encounter-sprite" id="encounter-sprite" src="${getAnimatedSprite(spawn.data.id, spawn.data.name)}" alt="${spawn.data.name}" onerror="this.src='${getStaticSprite(spawn.data.id)}'">
         <div class="poke-type-badges">
           <span class="poke-type-badge" style="background-color: ${spawn.data.color};">${spawn.data.type}</span>
           <span class="poke-type-badge" style="background-color: #d90429; font-weight: 900;">CP ${cpDisplay}</span>
@@ -361,7 +367,7 @@
           <span class="wild-badge" style="color: ${badgeColor};">●</span>
           <span>${badgeText}</span>
         </div>
-        <img class="poke-sprite" src="${getAnimatedSprite(data.id)}" alt="${data.name}" onerror="this.src='${getStaticSprite(data.id)}'">
+        <img class="poke-sprite" src="${getAnimatedSprite(data.id, data.name)}" alt="${data.name}" onerror="this.src='${getStaticSprite(data.id)}'">
       </div>
     `;
     return L.divIcon({

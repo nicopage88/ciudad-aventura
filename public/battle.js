@@ -5,7 +5,15 @@
   style.href = 'battle.css';
   document.head.append(style);
 
-  // Helper URLs
+  // Helper URLs (Showdown Fast Edge CDN + PokeAPI Multi-tier fallback)
+  const getOpponentSprite = (name, id) => {
+    const slug = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return `https://play.pokemonshowdown.com/sprites/ani/${slug}.gif`;
+  };
+  const getPlayerBackSprite = (name, id) => {
+    const slug = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return `https://play.pokemonshowdown.com/sprites/ani-back/${slug}.gif`;
+  };
   const getAnimatedSprite = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`;
   const getStaticSprite = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
@@ -290,16 +298,22 @@
     oppLvl.textContent = `Nv. ${battleState.opp.level}`;
     oppTrainer.textContent = trainerLabel;
     oppCp.textContent = `CP ${battleState.opp.cp}`;
-    oppSprite.src = getAnimatedSprite(battleState.opp.id);
-    oppSprite.onerror = () => { oppSprite.src = getStaticSprite(battleState.opp.id); };
+    oppSprite.src = getOpponentSprite(battleState.opp.name, battleState.opp.id);
+    oppSprite.onerror = () => {
+      oppSprite.onerror = () => { oppSprite.src = getStaticSprite(battleState.opp.id); };
+      oppSprite.src = getAnimatedSprite(battleState.opp.id);
+    };
     updateHpBars();
 
     // Update Player HUD
     myName.textContent = battleState.player.name;
     myLvl.textContent = `Nv. ${battleState.player.level}`;
     myCp.textContent = `CP ${battleState.player.cp}`;
-    mySprite.src = getAnimatedSprite(battleState.player.id);
-    mySprite.onerror = () => { mySprite.src = getStaticSprite(battleState.player.id); };
+    mySprite.src = getPlayerBackSprite(battleState.player.name, battleState.player.id);
+    mySprite.onerror = () => {
+      mySprite.onerror = () => { mySprite.src = getStaticSprite(battleState.player.id); };
+      mySprite.src = getAnimatedSprite(battleState.player.id);
+    };
     updateHpBars();
 
     // Render Moves

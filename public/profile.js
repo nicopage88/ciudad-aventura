@@ -54,6 +54,44 @@ function preview(){
   });
   itemSection.append(itemGrid);
   options.append(itemSection);
+
+  // GitAnimals.org Companion Pet Section
+  const gitPets = [
+    { id: 'none', label: 'Sin Mascota', emoji: '🚫', title: 'Sin mascota' },
+    { id: 'chick', label: 'Pollito 🐥', emoji: '🐥', title: 'Little Chick de GitAnimals', petId: '1' },
+    { id: 'cat', label: 'Gatito 🐱', emoji: '🐱', title: 'Cheese Cat de GitAnimals', petId: '17' },
+    { id: 'penguin', label: 'Pingüino 🐧', emoji: '🐧', title: 'Penguin de GitAnimals', petId: '1057' },
+    { id: 'capybara', label: 'Capibara 🦫', emoji: '🦫', title: 'Capybara de GitAnimals', petId: '791899491629877139' },
+    { id: 'shiba', label: 'Shiba 🐕', emoji: '🐕', title: 'Shiba Inu de GitAnimals', petId: '739451414643536153' }
+  ];
+
+  const petSection = document.createElement('div');
+  petSection.className = 'profile-items-section';
+  petSection.innerHTML = '<strong class="items-heading">🐾 Mascota Compañera (GitAnimals):</strong>';
+  const petGrid = document.createElement('div');
+  petGrid.className = 'item-grid';
+  let curPet = 'none';
+  try { curPet = localStorage.getItem('ciudad_pet') || 'none'; } catch {}
+
+  gitPets.forEach(p => {
+    const isChosen = curPet === p.id;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'item-btn' + (isChosen ? ' chosen' : '');
+    b.title = p.title;
+    b.innerHTML = `<span class="item-emoji">${p.emoji}</span><span class="item-text">${p.label}</span>`;
+    b.onclick = () => {
+      try {
+        if (p.id === 'none') localStorage.removeItem('ciudad_pet');
+        else localStorage.setItem('ciudad_pet', p.id);
+      } catch {}
+      if (window.updatePlayerPet) window.updatePlayerPet(p);
+      preview();
+    };
+    petGrid.append(b);
+  });
+  petSection.append(petGrid);
+  options.append(petSection);
 }
 function setUser(user){window.cityProfile=user;q('#auth-view').hidden=!!user;q('#profile-view').hidden=!user;const label=profileBtn.querySelector('.btn-label');if(label){label.textContent=user?user.nickname:'Perfil'}else{profileBtn.textContent=user?'👤 '+user.nickname:'👤 PERFIL'}if(user){selected={...user.avatar};q('#profile-greeting').textContent='¡Wena, '+user.nickname+'!';preview();window.applyCityAvatar(user.avatar)}else window.applyCityAvatar({});window.dispatchEvent(new CustomEvent('city-profile-changed',{detail:user}))}
 async function request(body){const response=await fetch('/api/account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),data=await response.json();if(!response.ok)throw Error(data.error||'No se pudo completar.');return data}

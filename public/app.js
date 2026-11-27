@@ -104,3 +104,47 @@ const battleScript=document.createElement('script');battleScript.src='battle.js'
 const camilaScript=document.createElement('script');camilaScript.src='camila.js';document.body.append(camilaScript);
 const servicesScript=document.createElement('script');servicesScript.src='services.js';document.body.append(servicesScript);
 const xmasScript=document.createElement('script');xmasScript.src='christmas.js';document.body.append(xmasScript);
+
+// GitAnimals Pet Companion Support
+let playerPetMarker = null;
+window.updatePlayerPet = function(pet) {
+  if (!pet || pet.id === 'none') {
+    if (playerPetMarker && window.map) {
+      window.map.removeLayer(playerPetMarker);
+      playerPetMarker = null;
+    }
+    return;
+  }
+  const petUrl = `https://render.gitanimals.org/lines/devxb?pet-id=${pet.petId || 1}`;
+  const html = `
+    <div class="player-pet-wrap" title="${pet.title || 'Mascota GitAnimals'}">
+      <img src="${petUrl}" width="52" height="34" alt="${pet.label}" style="object-fit: contain; pointer-events: none;">
+    </div>
+  `;
+  const icon = L.divIcon({ className: '', html, iconSize: [52, 34], iconAnchor: [-12, 28] });
+  if (!playerPetMarker && window.map) {
+    playerPetMarker = L.marker(pos, { icon, interactive: false, zIndexOffset: 920 }).addTo(window.map);
+  } else if (playerPetMarker) {
+    playerPetMarker.setIcon(icon);
+  }
+};
+window.addEventListener('city-player-moved', (e) => {
+  if (playerPetMarker && e.detail) {
+    playerPetMarker.setLatLng([e.detail.lat, e.detail.lng]);
+  }
+});
+setTimeout(() => {
+  try {
+    const saved = localStorage.getItem('ciudad_pet');
+    if (saved && saved !== 'none') {
+      const petMap = {
+        chick: { id: 'chick', label: 'Pollito 🐥', petId: '1', title: 'Little Chick de GitAnimals' },
+        cat: { id: 'cat', label: 'Gatito 🐱', petId: '17', title: 'Cheese Cat de GitAnimals' },
+        penguin: { id: 'penguin', label: 'Pingüino 🐧', petId: '1057', title: 'Penguin de GitAnimals' },
+        capybara: { id: 'capybara', label: 'Capibara 🦫', petId: '791899491629877139', title: 'Capybara de GitAnimals' },
+        shiba: { id: 'shiba', label: 'Shiba 🐕', petId: '739451414643536153', title: 'Shiba Inu de GitAnimals' }
+      };
+      if (petMap[saved]) window.updatePlayerPet(petMap[saved]);
+    }
+  } catch {}
+}, 1200);
