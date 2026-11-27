@@ -8,3 +8,7 @@ export const messages = sqliteTable("messages", {
   id: text("id").primaryKey(), room: text("room").notNull(), player: text("player").notNull(),
   name: text("name").notNull(), body: text("body").notNull(), created: integer("created").notNull()
 });
+export const cardGames = sqliteTable("card_games", {
+  room: text("room").primaryKey(), state: text("state").notNull(),
+  revision: integer("revision").notNull(), updated: integer("updated").notNull()
+});
