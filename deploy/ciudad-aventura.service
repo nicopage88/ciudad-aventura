@@ -1,0 +1,27 @@
+[Unit]
+Description=Ciudad Aventura web game
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ciudadaventura
+Group=ciudadaventura
+WorkingDirectory=/opt/ciudad-aventura
+Environment=NODE_ENV=production
+Environment=HOME=/var/lib/ciudad-aventura
+Environment=PATH=/opt/node-v22/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+Environment=WRANGLER_SEND_METRICS=false
+ExecStart=/opt/node-v22/bin/npm start
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/ciudad-aventura
+
+[Install]
+WantedBy=multi-user.target
+
