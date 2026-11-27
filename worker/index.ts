@@ -1,39 +1,27 @@
 import handler from "vinext/server/fetch-handler";
 import { runWithConnectorBinding } from "../lib/connector-context";
 import type { ConnectorBinding } from "../lib/connector-contract.mjs";
-import { newGame, act, view } from "./carioca";
 
 const worker = {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
     const url = new URL(request.url);
     if (url.pathname === "/") return Response.redirect(new URL("/game.html" + url.search + url.hash, url), 302);
-    if (url.pathname === "/api/carioca") {
-      if (request.method !== "POST" || request.headers.get("origin") !== url.origin) return new Response("Forbidden", {status:403});
+    if (url.pathname === "/api/rides") {
+      if(request.method!=="POST" || request.headers.get("origin")!==url.origin) return new Response("Forbidden",{status:403});
       const db=(env as unknown as {DB:D1Database}).DB;
-      let data:Record<string,unknown>;try{data=await request.json()}catch{return new Response("Datos inválidos",{status:400})}
-      const room=String(data.room||""),id=String(data.id||""),action=String(data.action||"view");
+      let input:Record<string,unknown>;try{input=await request.json()}catch{return new Response("Datos inválidos",{status:400})}
+      const room=String(input.room||""),id=String(input.id||""),action=String(input.action||"list"),now=Date.now();
       if(!db||!/^[a-zA-Z0-9_-]{8,64}$/.test(room)||!/^[a-zA-Z0-9_-]{8,64}$/.test(id))return new Response("Datos inválidos",{status:400});
-      const now=Date.now();
-      try {
-        let row=await db.prepare("SELECT state,revision,updated FROM card_games WHERE room=?").bind(room).first<{state:string;revision:number;updated:number}>();
-        if(action==="start"&&(!row||now-row.updated>7200000||JSON.parse(row.state).phase==="finished")){
-          const people=await db.prepare("SELECT player,name,lat,lng FROM players WHERE room=? AND updated>? ORDER BY updated DESC LIMIT 30").bind(room,now-20000).all<{player:string;name:string;lat:number;lng:number}>();
-          const near=people.results.filter(p=>Math.hypot((p.lat+33.5014)*111320,(p.lng+70.76412)*92500)<100);
-          if(!near.some(p=>p.player===id)||near.length<2)throw Error("Ambos deben estar conectados y dentro de Plaza Arica.");
-          const selected=[near.find(p=>p.player===id)!,near.find(p=>p.player!==id)!], game=newGame(selected);
-          if(row)await db.prepare("UPDATE card_games SET state=?,revision=revision+1,updated=? WHERE room=? AND revision=?").bind(JSON.stringify(game),now,room,row.revision).run();
-          else await db.prepare("INSERT OR IGNORE INTO card_games(room,state,revision,updated) VALUES(?,?,0,?)").bind(room,JSON.stringify(game),now).run();
-          row=await db.prepare("SELECT state,revision,updated FROM card_games WHERE room=?").bind(room).first<{state:string;revision:number;updated:number}>();
-        }
-        if(!row)throw Error("Aún no hay una mesa. Júntense en Plaza Arica y comienza una partida.");
-        const game=JSON.parse(row.state);
-        if(action!=="view"&&action!=="start"){
-          act(game,id,action,String(data.cardId||""));
-          const result=await db.prepare("UPDATE card_games SET state=?,revision=revision+1,updated=? WHERE room=? AND revision=?").bind(JSON.stringify(game),now,room,row.revision).run();
-          if(!result.meta.changes)return Response.json({error:"La mesa cambió; inténtalo nuevamente."},{status:409});
-        }
-        return Response.json(view(game,id),{headers:{"Cache-Control":"no-store"}});
-      }catch(error){return Response.json({error:error instanceof Error?error.message:"No se pudo abrir la mesa."},{status:400})}
+      const member=await db.prepare("SELECT player FROM players WHERE room=? AND player=? AND updated>?").bind(room,id,now-20000).first();
+      if(!member)return Response.json({error:"Conéctate a la sala primero."},{status:403});
+      if(action==="offer"){
+        const origin=String(input.origin||"").trim().slice(0,60),destination=String(input.destination||"").trim().slice(0,60),contribution=String(input.contribution||"").trim().slice(0,80),seats=Number(input.seats);
+        if(!origin||!destination||!Number.isInteger(seats)||seats<1||seats>8)return Response.json({error:"Completa origen, destino y asientos disponibles."},{status:400});
+        await db.prepare("INSERT INTO rides(room,player,origin,destination,seats,contribution,updated) VALUES(?,?,?,?,?,?,?) ON CONFLICT(room,player) DO UPDATE SET origin=excluded.origin,destination=excluded.destination,seats=excluded.seats,contribution=excluded.contribution,updated=excluded.updated").bind(room,id,origin,destination,seats,contribution,now).run();
+      }else if(action==="remove")await db.prepare("DELETE FROM rides WHERE room=? AND player=?").bind(room,id).run();
+      else if(action!=="list")return new Response("Acción inválida",{status:400});
+      const rides=await db.prepare("SELECT r.player,p.name,r.origin,r.destination,r.seats,r.contribution FROM rides r JOIN players p ON p.room=r.room AND p.player=r.player WHERE r.room=? AND p.updated>? AND r.updated>? ORDER BY r.updated DESC LIMIT 30").bind(room,now-20000,now-43200000).all();
+      return Response.json({rides:rides.results},{headers:{"Cache-Control":"no-store"}});
     }
     if (url.pathname === "/api/room") {
       if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
