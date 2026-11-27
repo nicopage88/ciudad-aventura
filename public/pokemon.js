@@ -51,11 +51,13 @@
   let pokedex = loadPokedex();
   let caughtCount = Object.keys(pokedex).length;
 
-  // Active wild Pokémon on map
+  // Active wild Pokémon on map - Kept low and subtle
+  const MAX_ACTIVE_SPAWNS = 1;
   const activeSpawns = new Map(); // id -> { marker, data, latlng }
   let spawnCounter = 0;
   let activeEncounter = null;
   let berryFed = false;
+  let lastSpawnTime = 0;
 
   // UI Setup
   let hudButton = document.querySelector('#pokedex-btn');
@@ -101,13 +103,9 @@
     if (badge) badge.textContent = caughtCount;
   }
 
-  // Play official cry
-  function playCry(id) {
-    try {
-      const audio = new Audio(getCryAudioUrl(id));
-      audio.volume = 0.55;
-      audio.play().catch(() => {});
-    } catch {}
+  // Audio disabled by request
+  function playCry(_id) {
+    // Sound muted
   }
 
   // Open Encounter
@@ -134,22 +132,17 @@
       <div class="poke-actions">
         <button class="poke-btn-catch" id="btn-catch">🔴 Lanzar Pokébola</button>
         <button class="poke-btn-berry" id="btn-berry">🍓 Dar Baya</button>
-        <button class="poke-btn-cry" id="btn-cry">🎶 Rugido</button>
         <button class="poke-btn-run" id="btn-run">🏃 Dejar ir</button>
       </div>
     `;
 
     modalOverlay.hidden = false;
-    playCry(spawn.data.id);
 
     const btnCatch = modalBody.querySelector('#btn-catch');
     const btnBerry = modalBody.querySelector('#btn-berry');
-    const btnCry = modalBody.querySelector('#btn-cry');
     const btnRun = modalBody.querySelector('#btn-run');
     const statusText = modalBody.querySelector('#encounter-status');
     const stage = modalBody.querySelector('#encounter-stage');
-
-    btnCry.onclick = () => playCry(spawn.data.id);
 
     btnBerry.onclick = () => {
       if (berryFed) {
@@ -199,7 +192,6 @@
 
       setTimeout(() => {
         if (caught) {
-          playCry(spawn.data.id);
           statusText.textContent = `¡${spawn.data.name} atrapado con éxito! 🎉`;
           pokedex[spawn.data.id] = (pokedex[spawn.data.id] || 0) + 1;
           savePokedex(pokedex);
@@ -277,16 +269,16 @@
     });
   }
 
-  // Spawner logic
+  // Spawner logic - drastically reduced density and frequency
   function spawnWildPokemonNear(playerLatLng) {
     if (!window.map) return;
-    if (activeSpawns.size >= 5) return;
+    if (activeSpawns.size >= MAX_ACTIVE_SPAWNS) return;
 
     // Pick random Pokémon
     const pData = WILD_POKEMON[Math.floor(Math.random() * WILD_POKEMON.length)];
     
-    // Spawn within 25 to 70 meters in random direction
-    const distanceMeters = 25 + Math.random() * 55;
+    // Spawn within 30 to 60 meters in random direction
+    const distanceMeters = 30 + Math.random() * 30;
     const angle = Math.random() * Math.PI * 2;
     const dLat = (distanceMeters * Math.cos(angle)) / 111320;
     const dLng = (distanceMeters * Math.sin(angle)) / (111320 * Math.cos(playerLatLng.lat * Math.PI / 180));
@@ -312,11 +304,7 @@
     };
 
     activeSpawns.set(spawnId, spawnObj);
-
-    // Subtle toast message occasionally
-    if (Math.random() < 0.45 && window.show) {
-      window.show(`¡Un ${pData.name} salvaje apareció en la calle!`);
-    }
+    lastSpawnTime = Date.now();
   }
 
   // Clean faraway Pokémon and auto-check proximity
@@ -327,45 +315,52 @@
     for (const [id, spawn] of activeSpawns) {
       const dist = playerLatLng.distanceTo(spawn.latlng);
       
-      // Auto-trigger encounter if walked right over it (<14m)
-      if (dist < 14 && (!activeEncounter || activeEncounter.id !== id) && modalOverlay.hidden) {
+      // Auto-trigger encounter if walked right over it (<12m)
+      if (dist < 12 && (!activeEncounter || activeEncounter.id !== id) && modalOverlay.hidden) {
         openEncounter(id);
         break;
       }
 
-      // Despawn if player moved very far away (>140m) or lived > 6 minutes
-      if (dist > 140 || (now - spawn.createdAt > 360000)) {
+      // Despawn if player moved far away (>110m) or lived > 5 minutes
+      if (dist > 110 || (now - spawn.createdAt > 300000)) {
         window.map.removeLayer(spawn.marker);
         activeSpawns.delete(id);
       }
     }
 
-    // Keep between 3 and 5 spawns near player
-    while (activeSpawns.size < 4) {
+    // Only spawn 1 if map is empty and cooldown elapsed
+    if (activeSpawns.size < MAX_ACTIVE_SPAWNS && (now - lastSpawnTime > 40000)) {
       spawnWildPokemonNear(playerLatLng);
     }
   }
 
   // Periodic cycle
+  let lastMoveCheck = 0;
   function initPokemonLoop() {
     if (!window.map || !window.pos) {
       setTimeout(initPokemonLoop, 500);
       return;
     }
 
-    // Initial batch of Pokémon
-    updatePokemonSpawns(window.pos);
+    // Initial single Pokémon spawn after slight delay
+    setTimeout(() => {
+      if (window.pos && activeSpawns.size === 0) {
+        spawnWildPokemonNear(window.pos);
+      }
+    }, 2000);
 
-    // Periodic check every 10 seconds
+    // Periodic check every 35 seconds
     setInterval(() => {
       if (window.pos) {
         updatePokemonSpawns(window.pos);
       }
-    }, 10000);
+    }, 35000);
 
-    // Listen for movement
+    // Listen for movement (throttled to at most once per 6 seconds)
     window.addEventListener('city-player-moved', (e) => {
-      if (e.detail) {
+      const now = Date.now();
+      if (e.detail && (now - lastMoveCheck > 6000)) {
+        lastMoveCheck = now;
         updatePokemonSpawns(L.latLng(e.detail.lat, e.detail.lng));
       }
     });
