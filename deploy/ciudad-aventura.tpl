@@ -6,12 +6,12 @@ server {
 
 	include %home%/%user%/conf/web/%domain%/nginx.forcessl.conf*;
 
-	location ^~ /.well-known/acme-challenge/ {
+	location /.well-known/acme-challenge/ {
 		root %docroot%;
 		try_files $uri =404;
 	}
 
-	location ~ /\. {
+	location ~ /\.(?!well-known\/|file) {
 		deny all;
 		return 404;
 	}

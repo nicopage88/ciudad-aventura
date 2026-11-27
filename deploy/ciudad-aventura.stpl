@@ -12,12 +12,12 @@ server {
 
 	include %home%/%user%/conf/web/%domain%/nginx.hsts.conf*;
 
-	location ^~ /.well-known/acme-challenge/ {
+	location /.well-known/acme-challenge/ {
 		root %sdocroot%;
 		try_files $uri =404;
 	}
 
-	location ~ /\. {
+	location ~ /\.(?!well-known\/|file) {
 		deny all;
 		return 404;
 	}
