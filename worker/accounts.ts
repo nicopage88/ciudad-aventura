@@ -5,7 +5,7 @@ const bytes=(n:number)=>crypto.getRandomValues(new Uint8Array(n));
 const hex=(b:ArrayBuffer|Uint8Array)=>Array.from(new Uint8Array(b as ArrayBuffer)).map(x=>x.toString(16).padStart(2,'0')).join('');
 function unhex(s:string){return new Uint8Array((s.match(/../g)||[]).map(x=>parseInt(x,16)))}
 async function digest(s:string){return hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))}
-async function derive(password:string,salt:string){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:unhex(salt),iterations:210000},key,256))}
+async function derive(password:string,salt:string){let material:BufferSource=new TextEncoder().encode(password);for(let i=0;i<6;i++){const key=await crypto.subtle.importKey('raw',material,'PBKDF2',false,['deriveBits']);const stageSalt=new Uint8Array(17);stageSalt.set(unhex(salt));stageSalt[16]=i;material=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:stageSalt,iterations:100000},key,256)}return hex(material as ArrayBuffer)}
 function equal(a:string,b:string){if(a.length!==b.length)return false;let diff=0;for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i);return diff===0}
 export function cleanAvatar(value:unknown){let v:Record<string,unknown>={};try{v=typeof value==='string'?JSON.parse(value):value as Record<string,unknown>||{}}catch{};return Object.fromEntries(Object.entries(palette).map(([key,colors])=>[key,colors.includes(String(v[key]))?String(v[key]):defaults[key as keyof typeof defaults]]))}
 function tokenFrom(request:Request){return request.headers.get('cookie')?.match(/(?:^|;\s*)city_session=([a-f0-9]{64})(?:;|$)/)?.[1]||''}
