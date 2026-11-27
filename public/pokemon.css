@@ -23,6 +23,20 @@
   animation: poke-bob 1.4s ease-in-out infinite alternate;
 }
 
+.gitanimal-sprite-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gitanimal-map-sprite {
+  width: 62px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35));
+  animation: poke-bob 1.4s ease-in-out infinite alternate;
+}
+
 @keyframes poke-bob {
   0% { transform: translateY(0); }
   100% { transform: translateY(-5px); }

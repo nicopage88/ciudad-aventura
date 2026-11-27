@@ -17,65 +17,73 @@
   const getAnimatedSprite = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`;
   const getStaticSprite = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
-  // Camila's Battle Team (Los más perrones de Maipú)
+  // Camila's Battle Team (Los GitAnimals más perrones de Maipú)
   const CAMILA_TEAM = [
     {
-      id: 448,
-      name: 'Lucario',
-      type: 'Lucha/Acero',
-      level: 48,
-      cp: 2750,
-      maxHp: 210,
-      moves: [
-        { name: 'Esfera Aural', power: 65, type: 'Lucha' },
-        { name: 'Puño Incremento', power: 45, type: 'Lucha' },
-        { name: 'Contraataque', power: 55, type: 'Lucha' },
-        { name: 'A Bocajarro', power: 85, type: 'Lucha' }
-      ]
-    },
-    {
-      id: 6,
-      name: 'Charizard',
-      type: 'Fuego/Volador',
+      id: 101,
+      petId: '791899491629877139',
+      name: 'Capibara Gigante',
+      emoji: '🦫',
+      type: 'Fauna / Chill',
       level: 50,
-      cp: 2880,
-      maxHp: 220,
+      cp: 3800,
+      maxHp: 260,
       moves: [
-        { name: 'Lanzallamas', power: 68, type: 'Fuego' },
-        { name: 'Garra Dragón', power: 52, type: 'Dragón' },
-        { name: 'Giro Fuego', power: 42, type: 'Fuego' },
-        { name: 'Anillo Ígneo', power: 90, type: 'Fuego' }
+        { name: 'Zen Capibara', power: 55, type: 'Chill' },
+        { name: 'Bao de Barro', power: 75, type: 'Tierra' },
+        { name: 'Mordisco Relajado', power: 80, type: 'Fauna' },
+        { name: 'Carga Soberana', power: 100, type: 'Fauna' }
       ]
     },
     {
-      id: 94,
-      name: 'Gengar',
-      type: 'Fantasma/Veneno',
-      level: 46,
-      cp: 2650,
-      maxHp: 195,
+      id: 103,
+      petId: '739451414643536153',
+      name: 'Shiba Inu Perrón',
+      emoji: '🐕',
+      type: 'Canino / Leal',
+      level: 48,
+      cp: 3500,
+      maxHp: 230,
       moves: [
-        { name: 'Bola Sombra', power: 65, type: 'Fantasma' },
-        { name: 'Bomba Lodo', power: 55, type: 'Veneno' },
-        { name: 'Garra Umbría', power: 45, type: 'Fantasma' },
-        { name: 'Come Sueños', power: 80, type: 'Psíquico' }
+        { name: 'Ladrido Furioso', power: 50, type: 'Canino' },
+        { name: 'Doble Salto', power: 65, type: 'Agilidad' },
+        { name: 'Mordida Ágil', power: 75, type: 'Canino' },
+        { name: 'Impacto Shiba', power: 95, type: 'Perrón' }
+      ]
+    },
+    {
+      id: 106,
+      petId: '6',
+      name: 'Pollito Fachero',
+      emoji: '🐥',
+      type: 'Ave / Estilo',
+      level: 46,
+      cp: 3100,
+      maxHp: 200,
+      moves: [
+        { name: 'Picotazo Fachero', power: 50, type: 'Ave' },
+        { name: 'Aleteo Dorado', power: 65, type: 'Estilo' },
+        { name: 'Destello Lentes', power: 75, type: 'Luz' },
+        { name: 'Rayo Estelar', power: 90, type: 'Estilo' }
       ]
     }
   ];
 
-  // Default starter partner for players who haven't caught Pokémon yet
+  // Default starter partner for players who haven't caught GitAnimals yet
   const DEFAULT_STARTER = {
-    id: 6,
-    name: 'Charizard',
-    type: 'Fuego/Volador',
+    id: 103,
+    petId: '739451414643536153',
+    name: 'Shiba Inu Perrón',
+    emoji: '🐕',
+    type: 'Canino / Leal',
     level: 50,
-    cp: 2880,
-    maxHp: 220,
+    cp: 3500,
+    maxHp: 230,
     moves: [
-      { name: 'Lanzallamas', power: 68, type: 'Fuego' },
-      { name: 'Garra Dragón', power: 52, type: 'Dragón' },
-      { name: 'Giro Fuego', power: 42, type: 'Fuego' },
-      { name: 'Anillo Ígneo', power: 90, type: 'Fuego' }
+      { name: 'Ladrido Furioso', power: 50, type: 'Canino' },
+      { name: 'Doble Salto', power: 65, type: 'Agilidad' },
+      { name: 'Mordida Ágil', power: 75, type: 'Canino' },
+      { name: 'Impacto Shiba', power: 95, type: 'Perrón' }
     ]
   };
 
@@ -210,18 +218,20 @@
       if (count <= 0) continue;
 
       const catalog = window.WILD_POKEMON ? window.WILD_POKEMON.find(w => w.id === id) : null;
-      const name = val.name || catalog?.name || `Pokémon #${id}`;
-      const type = val.type || catalog?.type || 'Normal';
+      const name = val.name || catalog?.name || `Mascota #${id}`;
+      const petId = val.petId || catalog?.petId || '1';
+      const emoji = val.emoji || catalog?.emoji || '🐾';
+      const type = val.type || catalog?.type || 'Fauna';
       const cp = Number(val.cp || catalog?.baseCp || 1800);
       const hp = Number(val.hp || catalog?.hp || 190);
       const moves = (val.moves && val.moves.length > 0) ? val.moves : (catalog?.moves || [
-        { name: 'Placaje', power: 45, type: 'Normal' },
-        { name: 'Ataque Rápido', power: 50, type: 'Normal' },
-        { name: 'Golpe Cabeza', power: 65, type: 'Normal' },
-        { name: 'Hiperrayo', power: 85, type: 'Normal' }
+        { name: 'Mordisco Ágil', power: 45, type: 'Fauna' },
+        { name: 'Salto Veloz', power: 55, type: 'Agilidad' },
+        { name: 'Golpe Amigo', power: 65, type: 'Normal' },
+        { name: 'Impacto GitAnimal', power: 85, type: 'Poder' }
       ]);
       const level = Math.min(60, Math.max(25, Math.round(cp / 55)));
-      list.push({ id, name, type, cp, maxHp: hp, hp, level, moves });
+      list.push({ id, petId, emoji, name, type, cp, maxHp: hp, hp, level, moves });
     }
 
     if (list.length === 0) {
@@ -251,30 +261,32 @@
       const hp = Number(wildData.hp || 190);
       const level = Math.min(60, Math.max(20, Math.round(cp / 55)));
       const moves = (wildData.moves && wildData.moves.length > 0) ? wildData.moves : [
-        { name: 'Placaje Salvaje', power: 45, type: 'Normal' },
-        { name: 'Ataque Furia', power: 55, type: 'Normal' },
-        { name: 'Mordisco', power: 65, type: 'Siniestro' },
-        { name: 'Hiperrayo', power: 85, type: 'Normal' }
+        { name: 'Mordisco Salvaje', power: 45, type: 'Fauna' },
+        { name: 'Ataque Furia', power: 55, type: 'Agilidad' },
+        { name: 'Salto Amigo', power: 65, type: 'Normal' },
+        { name: 'Carga Soberana', power: 85, type: 'Fauna' }
       ];
 
       oppData = {
         id: wildData.id,
+        petId: wildData.petId,
+        emoji: wildData.emoji || '🐾',
         name: wildData.name,
-        type: wildData.type || 'Normal',
+        type: wildData.type || 'Fauna',
         level,
         cp,
         maxHp: hp,
         hp,
         moves
       };
-      trainerLabel = 'Pokémon Salvaje';
+      trainerLabel = 'Animalito Salvaje (GitAnimals)';
       arenaTitle.textContent = `⚔️ ARENA · COMBATE CON ${wildData.name.toUpperCase()} SALVAJE`;
     } else {
       // Pick Camila or other online trainer
       const oppBase = CAMILA_TEAM[Math.floor(Math.random() * CAMILA_TEAM.length)];
       oppData = { ...oppBase, hp: oppBase.maxHp };
       trainerLabel = isCamila ? 'Entrenadora: Camila' : `Entrenador: ${target}`;
-      arenaTitle.textContent = isCamila ? '⚔️ ARENA POKÉMON · DUELO CON CAMILA' : `⚔️ ARENA · DUELO CON ${target}`;
+      arenaTitle.textContent = isCamila ? '⚔️ ARENA DE MASCOTAS · DUELO CON CAMILA' : `⚔️ ARENA · DUELO CON ${target}`;
     }
 
     const myBase = getBestUserPokemon();
@@ -294,26 +306,28 @@
     };
 
     // Update Opponent HUD
-    oppName.textContent = battleState.opp.name;
+    oppName.textContent = (battleState.opp.emoji ? battleState.opp.emoji + ' ' : '') + battleState.opp.name;
     oppLvl.textContent = `Nv. ${battleState.opp.level}`;
     oppTrainer.textContent = trainerLabel;
     oppCp.textContent = `CP ${battleState.opp.cp}`;
-    oppSprite.src = getOpponentSprite(battleState.opp.name, battleState.opp.id);
-    oppSprite.onerror = () => {
+    if (battleState.opp.petId) {
+      oppSprite.src = `https://render.gitanimals.org/lines/devxb?pet-id=${battleState.opp.petId}`;
+    } else {
+      oppSprite.src = getOpponentSprite(battleState.opp.name, battleState.opp.id);
       oppSprite.onerror = () => { oppSprite.src = getStaticSprite(battleState.opp.id); };
-      oppSprite.src = getAnimatedSprite(battleState.opp.id);
-    };
+    }
     updateHpBars();
 
     // Update Player HUD
-    myName.textContent = battleState.player.name;
+    myName.textContent = (battleState.player.emoji ? battleState.player.emoji + ' ' : '') + battleState.player.name;
     myLvl.textContent = `Nv. ${battleState.player.level}`;
     myCp.textContent = `CP ${battleState.player.cp}`;
-    mySprite.src = getPlayerBackSprite(battleState.player.name, battleState.player.id);
-    mySprite.onerror = () => {
+    if (battleState.player.petId) {
+      mySprite.src = `https://render.gitanimals.org/lines/devxb?pet-id=${battleState.player.petId}`;
+    } else {
+      mySprite.src = getPlayerBackSprite(battleState.player.name, battleState.player.id);
       mySprite.onerror = () => { mySprite.src = getStaticSprite(battleState.player.id); };
-      mySprite.src = getAnimatedSprite(battleState.player.id);
-    };
+    }
     updateHpBars();
 
     // Render Moves

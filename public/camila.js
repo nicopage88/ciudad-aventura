@@ -13,13 +13,13 @@
 
   const MESSAGES = [
     '¡Si quieres te llevo en mi moto! 🏍️💨',
-    '¡Quiero jugar una partida rápida de poke! 🔴✨',
+    '¡Mira ese Capibara Gigante en la plaza! 🦫✨',
+    '¡Quiero echar un duelo con mi Shiba Perrón! 🐕⚔️',
     '¡Qué linda se ve la feria navideña de Maipú! 🎄⭐',
-    '¡Atrapé un Lucario recién en la plaza! 🥊',
+    '¡Atrapé un Pollito con lentes en la esquina! 🐥🕶️',
     '¡Wena vecino! ¿Vamos por un pan de pascua y cola de mono? ☕🎅',
-    '¡Desafíame a una batalla Pokémon! ⚔️',
-    '¡Súbete a mi moto y te doy una vuelta! 🚗💨',
-    '¿Viste los nuevos puestos navideños? Hay cosas bacanes 🎁'
+    '¡Desafíame a un duelo de GitAnimals en la arena! ⚔️',
+    '¿Viste los animalitos de GitAnimals en las plazas? ¡Están bacanes! 🐾'
   ];
 
   let currentWpIndex = 0;
@@ -71,7 +71,7 @@
         "${currentBubble}"
       </p>
       <div class="camila-actions-col">
-        <button id="camila-battle-act" class="camila-act-btn battle-act">⚔️ Batalla Pokémon con Camila</button>
+        <button id="camila-battle-act" class="camila-act-btn battle-act">⚔️ Duelo de Mascotas con Camila</button>
         <button id="camila-ride-act" class="camila-act-btn ride-act">🏍️ Paseo en Moto (Aventón)</button>
         <button id="camila-chat-act" class="camila-act-btn chat-act">💬 Charlar un rato</button>
       </div>
