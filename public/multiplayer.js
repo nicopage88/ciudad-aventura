@@ -24,6 +24,7 @@ rq('#ride-form').onsubmit=async e=>{e.preventDefault();try{const data=await ride
 rq('#ride-remove').onclick=async()=>{try{const data=await ridesCall('remove');renderRides(data.rides);rq('#rides-error').textContent='Ya no estás ofreciendo aventones.'}catch(e){rq('#rides-error').textContent=e.message}};
 setInterval(()=>{if(!ridesPanel.hidden)refreshRides()},5000);
 function send(text){pending.push(text);sync()}
+window.sendThoughtToRoom=function(text){if(connected&&text){send(text)}};
 function notify(item){let event=null;try{if(item.body.startsWith('@@junta:'))event=JSON.parse(item.body.slice(8))}catch{}if(event&&event.to!==player)return;q('#notice-name').textContent=item.name+(event?'':' dice:');q('#notice-body').textContent=event?({pregunta:'¿Qué querís? 😄',rey:'¿Qué pasa, rey? 👑',necesidad:'¿Qué necesitái? 🤔',saludo:'¡Te manda un saludo! 👋',viaje:'¿Le das un aventón? 🚗',invitar:'Te invita a juntarse. ¿Aceptas?',junta:'Quiere formar una junta contigo. ¿Aceptas?',aceptado:'¡Aceptó tu invitación! 🙌',rechazado:'Por ahora no puede unirse.'}[event.type]||'Te mandó una invitación.'):item.body;let buttons=q('#notice-actions');buttons.replaceChildren();function button(label,fn){let b=document.createElement('button');b.textContent=label;b.onclick=fn;buttons.append(b)}if(event&&['invitar','junta','viaje'].includes(event.type)){button('Aceptar',()=>{send('@@junta:'+JSON.stringify({to:item.player,type:'aceptado'}));notice.hidden=true;show('¡Se armó, po!')});button('Ahora no',()=>{send('@@junta:'+JSON.stringify({to:item.player,type:'rechazado'}));notice.hidden=true})}else{button('Responder',()=>{notice.hidden=true;panel.hidden=false;q('#chat-text').focus()});button('Cerrar',()=>notice.hidden=true)}notice.hidden=false;clearTimeout(noticeTimer);if(!event||!['invitar','junta','viaje'].includes(event.type))noticeTimer=setTimeout(()=>notice.hidden=true,9000)}
 roomBtn.onclick=()=>panel.hidden=!panel.hidden;q('#hide-room').onclick=()=>panel.hidden=true;
 q('#join-room').onclick=async()=>{await window.cityProfileReady;if(!window.cityProfile){window.openCityProfile();return}player=window.cityProfile.id;name=window.cityProfile.nickname;if(!room||!/^[a-zA-Z0-9_-]{8,64}$/.test(room)){room=crypto.randomUUID();const u=new URL(location.href);u.searchParams.set('sala',room);history.replaceState(null,'',u)}connected=true;ridesBtn.hidden=false;initial=true;known.clear();join.hidden=true;chat.hidden=false;setPixelIcon(roomBtn,'chat','MENSAJES');sync()};
@@ -65,7 +66,7 @@ async function sync(){
     if(data.messages){
       const now=Date.now();
       for(const item of data.messages){
-        if(!item.body.startsWith('@@junta:')&&(!playerRecentMsgs.has(item.player)||(now-(item.created||now)<15000))){
+        if(!item.body.startsWith('@@junta:')&&(!playerRecentMsgs.has(item.player)||(now-(item.created||now)<60000))){
           playerRecentMsgs.set(item.player,{text:item.body,created:item.created||now});
         }
       }
@@ -78,7 +79,7 @@ async function sync(){
       let avatar={};
       try{avatar=JSON.parse(p.avatar||'{}')}catch{}
       const recent=playerRecentMsgs.get(p.player);
-      const bubbleText=(recent&&(now-recent.created<14000))?recent.text:'';
+      const bubbleText=(recent&&(now-recent.created<60000))?recent.text:'';
       const iconKey=p.avatar+'|'+bubbleText;
 
       let m=markers.get(p.player);

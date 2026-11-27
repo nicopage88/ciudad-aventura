@@ -16,8 +16,29 @@ function loadWorld(){clearTimeout(queryTimer);queryTimer=setTimeout(async()=>{le
 map.on('moveend',loadWorld);
 const baseSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" shape-rendering="crispEdges"><path fill="#29303a" d="M8 2h16v4h4v13h-3v12h-3v8h-6v-5h-2v5H8v-8H5V19H3V7h5z"/><path fill="#e14d42" d="M8 3h16v4h4v5H4V7h4z"/><path fill="#fff3d7" d="M7 12h18v9h-3v3H10v-3H7z"/><path fill="#192e38" d="M10 14h3v3h-3zm9 0h3v3h-3z"/><path fill="#4f91d1" d="M8 24h16v9h-5v-4h-6v4H8z"/><path fill="#efbf87" d="M5 22h3v7H5zm19 0h3v7h-3z"/></svg>`;
 let svg=baseSvg;
-const playerIcon=L.divIcon({className:'',html:`<img class="sprite" src="data:image/svg+xml,${encodeURIComponent(svg)}" alt="">`,iconSize:[40,52],iconAnchor:[20,45]});
-let pos=L.latLng(PLAZA.lat+.001,PLAZA.lng),player=L.marker(pos,{icon:playerIcon,interactive:false,zIndexOffset:1000}).addTo(map),started=true,timer=null,score=0;
+let myThought = '';
+try { myThought = localStorage.getItem('ciudad_my_thought') || ''; } catch {}
+window.getMyThought = () => myThought;
+function escapeThoughtHtml(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function makeLocalPlayerIcon() {
+  const bubble = myThought ? `<div class="player-bubble my-thought-bubble" title="Click para cambiar tu pensamiento">${escapeThoughtHtml(myThought)}</div>` : '';
+  const html = `<div class="my-player-wrap">${bubble}<img class="sprite" src="data:image/svg+xml,${encodeURIComponent(svg)}" alt=""></div>`;
+  return L.divIcon({ className: '', html, iconSize: [40, 52], iconAnchor: [20, 45] });
+}
+let pos=L.latLng(PLAZA.lat+.001,PLAZA.lng),player=L.marker(pos,{icon:makeLocalPlayerIcon(),interactive:true,zIndexOffset:1000}).addTo(map),started=true,timer=null,score=0;
+window.player=player;
+player.on('click', () => { if (window.openThoughtModal) window.openThoughtModal(); });
+window.setPlayerThought = text => {
+  myThought = (text || '').trim();
+  try {
+    if (myThought) localStorage.setItem('ciudad_my_thought', myThought);
+    else localStorage.removeItem('ciudad_my_thought');
+  } catch {}
+  player.setIcon(makeLocalPlayerIcon());
+  if (window.sendThoughtToRoom) window.sendThoughtToRoom(myThought);
+};
 window.pos=pos;
 const plazaIcon=L.divIcon({className:'',html:'<div class="plaza-mark">★<span>PLAZA DE MAIPÚ</span></div>',iconSize:[80,50],iconAnchor:[40,25]});
 L.marker(PLAZA,{icon:plazaIcon,interactive:false}).addTo(map);
@@ -42,7 +63,8 @@ document.querySelector('#close').onclick=()=>{modal.hidden=true};
 document.querySelector('#again').onclick=game;
 board.onclick=e=>{let b=e.target.closest('.memory');if(!b||busy||b.disabled||flipped.includes(b))return;let i=Number(b.dataset.index);b.textContent=cards[i];flipped.push(b);if(flipped.length===2){if(cards[Number(flipped[0].dataset.index)]===cards[i]){flipped.forEach(x=>x.disabled=true);flipped=[];pairs++;status.textContent=`Parejas: ${pairs}/4`;if(pairs===4){score++;scoreEl.textContent=score;status.textContent='¡Ganaste! Completaste todas las parejas.'}}else{busy=true;setTimeout(()=>{flipped.forEach(x=>x.textContent='?');flipped=[];busy=false},700)}}};
 update();loadWorld();
-window.makeCityAvatar=(avatar={})=>{const valid=(v,f)=>/^#[a-fA-F0-9]{6}$/.test(v||'')?v:f;let res=baseSvg.replace('#e14d42',valid(avatar.hat,'#e14d42')).replace('#4f91d1',valid(avatar.shirt,'#4f91d1')).replaceAll('#efbf87',valid(avatar.skin,'#efbf87'));const item=avatar.item||avatar.accessory;let extra='';if(item==='xmas_hat'){extra='<path fill="#29303a" d="M7 1h15v2h5v5h3v5h-5v-1H7z"/><path fill="#d91e2e" d="M8 2h14v7H8z M22 3h4v5h-4z M25 6h3v4h-3z"/><path fill="#ff4d5a" d="M9 3h8v3H9z"/><path fill="#ffffff" d="M5 8h22v4H5z M26 7h4v4h-4z"/><path fill="#e2e8f0" d="M5 11h22v1H5z M27 10h3v1h-3z"/>';}else if(item==='reindeer'){extra='<path fill="#5c3a21" d="M4 0h3v4h2v3H7v-2H5V3H4z M25 0h3v3h-1v2h-2v2h-2V4h2V0z"/><path fill="#8b5a2b" d="M5 1h2v3H5z M25 1h2v2h-2z"/><path fill="#e63946" d="M14 17h4v3h-4z"/><rect x="15" y="18" width="1" height="1" fill="#ffffff"/>';}else if(item==='xmas_scarf'){extra='<path fill="#d91e2e" d="M6 21h20v4H6z M18 25h5v8h-5z"/><path fill="#2d6a4f" d="M10 21h3v4h-3z M19 21h3v4h-3z M18 28h5v2h-5z"/><path fill="#ffffff" d="M18 32h5v1h-5z"/>';}else if(item==='tree_hat'){extra='<path fill="#ffd166" d="M15 0h2v2h-2z M14 1h4v1h-4z"/><path fill="#1b4332" d="M13 2h6v2h-6z M11 4h10v3h-10z M8 7h16v3H8z"/><path fill="#2d6a4f" d="M14 3h4v1h-4z M12 5h8v2h-8z M9 8h14v2H9z"/><circle cx="11" cy="9" r="1" fill="#e63946"/><circle cx="21" cy="9" r="1" fill="#3a86ff"/><circle cx="16" cy="6" r="1" fill="#ffd166"/>';}if(extra){res=res.replace('</svg>',extra+'</svg>');}return res;};window.applyCityAvatar=avatar=>{svg=window.makeCityAvatar(avatar);const image=player.getElement()?.querySelector('img');if(image)image.src='data:image/svg+xml,'+encodeURIComponent(svg)};window.cityProfileReady=new Promise(resolve=>{window.cityProfileResolve=resolve});const profileScript=document.createElement('script');profileScript.src='profile.js';document.body.append(profileScript);
+window.makeCityAvatar=(avatar={})=>{const valid=(v,f)=>/^#[a-fA-F0-9]{6}$/.test(v||'')?v:f;let res=baseSvg.replace('#e14d42',valid(avatar.hat,'#e14d42')).replace('#4f91d1',valid(avatar.shirt,'#4f91d1')).replaceAll('#efbf87',valid(avatar.skin,'#efbf87'));const item=avatar.item||avatar.accessory;let extra='';if(item==='xmas_hat'){extra='<path fill="#29303a" d="M7 1h15v2h5v5h3v5h-5v-1H7z"/><path fill="#d91e2e" d="M8 2h14v7H8z M22 3h4v5h-4z M25 6h3v4h-3z"/><path fill="#ff4d5a" d="M9 3h8v3H9z"/><path fill="#ffffff" d="M5 8h22v4H5z M26 7h4v4h-4z"/><path fill="#e2e8f0" d="M5 11h22v1H5z M27 10h3v1h-3z"/>';}else if(item==='reindeer'){extra='<path fill="#5c3a21" d="M4 0h3v4h2v3H7v-2H5V3H4z M25 0h3v3h-1v2h-2v2h-2V4h2V0z"/><path fill="#8b5a2b" d="M5 1h2v3H5z M25 1h2v2h-2z"/><path fill="#e63946" d="M14 17h4v3h-4z"/><rect x="15" y="18" width="1" height="1" fill="#ffffff"/>';}else if(item==='xmas_scarf'){extra='<path fill="#d91e2e" d="M6 21h20v4H6z M18 25h5v8h-5z"/><path fill="#2d6a4f" d="M10 21h3v4h-3z M19 21h3v4h-3z M18 28h5v2h-5z"/><path fill="#ffffff" d="M18 32h5v1h-5z"/>';}else if(item==='tree_hat'){extra='<path fill="#ffd166" d="M15 0h2v2h-2z M14 1h4v1h-4z"/><path fill="#1b4332" d="M13 2h6v2h-6z M11 4h10v3h-10z M8 7h16v3H8z"/><path fill="#2d6a4f" d="M14 3h4v1h-4z M12 5h8v2h-8z M9 8h14v2H9z"/><circle cx="11" cy="9" r="1" fill="#e63946"/><circle cx="21" cy="9" r="1" fill="#3a86ff"/><circle cx="16" cy="6" r="1" fill="#ffd166"/>';}if(extra){res=res.replace('</svg>',extra+'</svg>');}return res;};window.applyCityAvatar=avatar=>{svg=window.makeCityAvatar(avatar);player.setIcon(makeLocalPlayerIcon());};window.cityProfileReady=new Promise(resolve=>{window.cityProfileResolve=resolve});const profileScript=document.createElement('script');profileScript.src='profile.js';document.body.append(profileScript);
+const thoughtScript=document.createElement('script');thoughtScript.src='thought.js';document.body.append(thoughtScript);
 const multiplayerScript=document.createElement('script');multiplayerScript.src='multiplayer.js';document.body.append(multiplayerScript);
 const pokeScript=document.createElement('script');pokeScript.src='pokemon.js';document.body.append(pokeScript);
 const xmasScript=document.createElement('script');xmasScript.src='christmas.js';document.body.append(xmasScript);

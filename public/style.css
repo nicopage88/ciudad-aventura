@@ -311,6 +311,13 @@ header {
   box-shadow: 0 3px 0 #1b4332;
 }
 
+.btn-thought {
+  background: linear-gradient(180deg, #5c677d 0%, #33415c 100%);
+  border-color: #d7e3fc;
+  box-shadow: 0 3px 0 #1b263b;
+  color: #fff;
+}
+
 .btn-profile {
   background: linear-gradient(180deg, #457b9d 0%, #2f5b75 100%);
   border-color: #a8dadc;
@@ -359,4 +366,51 @@ header {
     padding: 6px 9px;
     font-size: 0.72rem;
   }
+}
+
+/* Pensamiento sobre la cabeza del personaje local */
+.my-player-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.my-thought-bubble {
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.98);
+  color: #1a202c;
+  border: 2.5px solid #2b6cb0;
+  border-radius: 12px;
+  padding: 5px 10px;
+  font: 800 0.72rem/1.25 Nunito, sans-serif;
+  max-width: 250px;
+  min-width: 80px;
+  width: max-content;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  pointer-events: auto;
+  cursor: pointer;
+  animation: thought-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 10000;
+  word-wrap: break-word;
+}
+
+.my-thought-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0;
+  border-style: solid;
+  border-color: #2b6cb0 transparent transparent;
+}
+
+@keyframes thought-pop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.85); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
