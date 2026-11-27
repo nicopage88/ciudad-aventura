@@ -1,1 +1,54 @@
 .profile-open{position:absolute;z-index:700;right:26px;top:192px;min-height:42px;background:#697ab0;color:white;border:3px solid #d4dcff;border-radius:10px;padding:8px 12px;font:900 .72rem Nunito;box-shadow:0 4px 0 #3e4a79}.profile-overlay[hidden],.profile-panel [hidden]{display:none}.profile-overlay{position:fixed;z-index:2000;inset:0;background:#0c1d28d9;display:grid;place-items:center;padding:15px}.profile-panel{width:min(390px,100%);max-height:90dvh;overflow:auto;background:#fff0ce;color:#263e37;border:4px solid #6d8c74;border-radius:14px;padding:20px;box-shadow:0 7px 0 #25423a;font:700 .95rem Nunito}.profile-panel header{display:flex;justify-content:space-between;align-items:center;color:#9b6540;font:700 .7rem 'Press Start 2P'}.profile-panel header button{border:0;background:none;font-size:1.3rem}.profile-panel label{display:block;margin:12px 0}.profile-panel input{display:block;width:100%;font:700 1rem Nunito;border:2px solid #a4b99f;border-radius:8px;padding:10px;background:#fffdf3}.profile-panel button:not(header button):not(.swatch){border:0;border-radius:8px;padding:11px 15px;background:#578f78;color:white;font-weight:900}.profile-panel button:disabled{opacity:.5}.profile-panel .link-button{display:block;background:transparent!important;color:#80543c!important;padding-left:0!important}.profile-panel small{display:block;color:#6a7d70;line-height:1.4}.avatar-preview{display:grid;place-items:center;background:#9ecb9a;border:3px solid #6c9972;border-radius:10px;padding:15px}.avatar-preview img{width:80px;height:105px;image-rendering:pixelated;filter:drop-shadow(0 4px 1px #0005)}.avatar-row{display:flex;align-items:center;gap:9px;margin:13px 0}.avatar-row strong{width:55px}.swatch{width:32px;height:32px;border:3px solid #fff4d8;border-radius:8px;box-shadow:0 0 0 1px #b3a68c}.swatch.chosen{box-shadow:0 0 0 3px #334f40}#profile-message{min-height:1.3em;color:#a04b38}
+
+/* Objetos y Accesorios Navideños en Perfil */
+.profile-items-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px dashed #9cb597;
+}
+.items-heading {
+  display: block;
+  font-size: 0.85rem;
+  color: #8b3a2b;
+  margin-bottom: 8px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.65rem;
+}
+.item-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.item-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+  background: #fffdf5 !important;
+  color: #263e37 !important;
+  border: 2px solid #a4b99f !important;
+  border-radius: 8px !important;
+  padding: 6px 9px !important;
+  font: 800 0.74rem Nunito, sans-serif !important;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #8c9e88 !important;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+.item-btn:hover {
+  background: #fff6da !important;
+  border-color: #578f78 !important;
+  transform: translateY(-1px);
+}
+.item-btn.chosen {
+  background: #e8f5e9 !important;
+  border-color: #2e7d32 !important;
+  box-shadow: 0 0 0 2px #2e7d32, 0 2px 0 #1b5e20 !important;
+  color: #1b5e20 !important;
+  font-weight: 900 !important;
+}
+.item-emoji {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.item-text {
+  white-space: nowrap;
+}

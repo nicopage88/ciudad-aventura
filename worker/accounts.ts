@@ -1,6 +1,6 @@
 type Account = { id:string; nickname:string; avatar:string };
-const palette={hat:['#e14d42','#3f85c9','#66a66a','#8a65b7','#f0b844'],shirt:['#4f91d1','#df6b61','#61a879','#8d70b8','#e0a43c'],skin:['#efbf87','#e9a76e','#ba7b4c','#875238','#f5d5ae']};
-const defaults={hat:palette.hat[0],shirt:palette.shirt[0],skin:palette.skin[0]};
+const palette={hat:['#e14d42','#3f85c9','#66a66a','#8a65b7','#f0b844'],shirt:['#4f91d1','#df6b61','#61a879','#8d70b8','#e0a43c'],skin:['#efbf87','#e9a76e','#ba7b4c','#875238','#f5d5ae'],item:['none','xmas_hat','reindeer','xmas_scarf','tree_hat']};
+const defaults={hat:palette.hat[0],shirt:palette.shirt[0],skin:palette.skin[0],item:'none'};
 const bytes=(n:number)=>crypto.getRandomValues(new Uint8Array(n));
 const hex=(b:ArrayBuffer|Uint8Array)=>Array.from(new Uint8Array(b as ArrayBuffer)).map(x=>x.toString(16).padStart(2,'0')).join('');
 function unhex(s:string){return new Uint8Array((s.match(/../g)||[]).map(x=>parseInt(x,16)))}

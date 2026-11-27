@@ -6,8 +6,55 @@ root.innerHTML=`<div id="profile-overlay" class="profile-overlay" hidden><div cl
 if(!profileBtn){profileBtn=document.createElement('button');profileBtn.id='profile-open';profileBtn.className='profile-open';profileBtn.textContent='👤 PERFIL';root.prepend(profileBtn)}
 document.body.append(root);
 const q=s=>root.querySelector(s),overlay=q('#profile-overlay');let mode='login',selected={};const palette={hat:['#e14d42','#3f85c9','#66a66a','#8a65b7','#f0b844'],shirt:['#4f91d1','#df6b61','#61a879','#8d70b8','#e0a43c'],skin:['#efbf87','#e9a76e','#ba7b4c','#875238','#f5d5ae']},labels={hat:'Gorro',shirt:'Ropa',skin:'Piel'};
+const items=[
+  {id:'none',label:'Ninguno',emoji:'🚫',title:'Sin objeto adicional'},
+  {id:'xmas_hat',label:'Gorro Navidad',emoji:'🎅',title:'Gorro de Navidad con pompón y nieve'},
+  {id:'reindeer',label:'Cuernos Reno',emoji:'🦌',title:'Astas de reno y nariz roja'},
+  {id:'xmas_scarf',label:'Bufanda',emoji:'🧣',title:'Bufanda navideña de lana abrigada'},
+  {id:'tree_hat',label:'Arbolito',emoji:'🎄',title:'Gorro de árbol de navidad'}
+];
 window.cityProfile=null;window.openCityProfile=()=>{overlay.hidden=false;q('#profile-message').textContent=''};profileBtn.onclick=window.openCityProfile;q('#profile-close').onclick=()=>overlay.hidden=true;
-function preview(){q('#avatar-image').src='data:image/svg+xml,'+encodeURIComponent(window.makeCityAvatar(selected));let options=q('#avatar-options');options.replaceChildren();for(const [key,colors] of Object.entries(palette)){const row=document.createElement('div');row.className='avatar-row';const label=document.createElement('strong');label.textContent=labels[key];row.append(label);colors.forEach((color,i)=>{const b=document.createElement('button');b.type='button';b.className='swatch'+(selected[key]===color?' chosen':'');b.style.backgroundColor=color;b.setAttribute('aria-label',labels[key]+' opción '+(i+1));b.setAttribute('aria-pressed',String(selected[key]===color));b.onclick=()=>{selected[key]=color;preview()};row.append(b)});options.append(row)}}
+function preview(){
+  q('#avatar-image').src='data:image/svg+xml,'+encodeURIComponent(window.makeCityAvatar(selected));
+  let options=q('#avatar-options');
+  options.replaceChildren();
+  for(const [key,colors] of Object.entries(palette)){
+    const row=document.createElement('div');
+    row.className='avatar-row';
+    const label=document.createElement('strong');
+    label.textContent=labels[key];
+    row.append(label);
+    colors.forEach((color,i)=>{
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='swatch'+(selected[key]===color?' chosen':'');
+      b.style.backgroundColor=color;
+      b.setAttribute('aria-label',labels[key]+' opción '+(i+1));
+      b.setAttribute('aria-pressed',String(selected[key]===color));
+      b.onclick=()=>{selected[key]=color;preview()};
+      row.append(b);
+    });
+    options.append(row);
+  }
+  const itemSection=document.createElement('div');
+  itemSection.className='profile-items-section';
+  itemSection.innerHTML='<strong class="items-heading">🎄 Objetos de Navidad:</strong>';
+  const itemGrid=document.createElement('div');
+  itemGrid.className='item-grid';
+  items.forEach(it=>{
+    const isSelected=(selected.item||'none')===it.id;
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='item-btn'+(isSelected?' chosen':'');
+    b.title=it.title;
+    b.innerHTML=`<span class="item-emoji">${it.emoji}</span><span class="item-text">${it.label}</span>`;
+    b.setAttribute('aria-pressed',String(isSelected));
+    b.onclick=()=>{selected.item=it.id;preview()};
+    itemGrid.append(b);
+  });
+  itemSection.append(itemGrid);
+  options.append(itemSection);
+}
 function setUser(user){window.cityProfile=user;q('#auth-view').hidden=!!user;q('#profile-view').hidden=!user;const label=profileBtn.querySelector('.btn-label');if(label){label.textContent=user?user.nickname:'Perfil'}else{profileBtn.textContent=user?'👤 '+user.nickname:'👤 PERFIL'}if(user){selected={...user.avatar};q('#profile-greeting').textContent='¡Wena, '+user.nickname+'!';preview();window.applyCityAvatar(user.avatar)}else window.applyCityAvatar({});window.dispatchEvent(new CustomEvent('city-profile-changed',{detail:user}))}
 async function request(body){const response=await fetch('/api/account',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),data=await response.json();if(!response.ok)throw Error(data.error||'No se pudo completar.');return data}
 q('#auth-switch').onclick=()=>{mode=mode==='login'?'register':'login';q('#auth-submit').textContent=mode==='login'?'Entrar':'Crear cuenta';q('#auth-switch').textContent=mode==='login'?'¿Primera vez? Crea tu cuenta':'Ya tengo cuenta';q('#auth-pass').autocomplete=mode==='login'?'current-password':'new-password';q('#profile-message').textContent=''};

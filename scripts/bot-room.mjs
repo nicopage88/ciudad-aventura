@@ -31,6 +31,24 @@ async function main() {
   let session = await login();
   console.log(`[BOT] Conectado como ${session.user.nickname} (${session.user.id})`);
 
+  // Equip Christmas hat
+  try {
+    await fetch(`${BASE}/api/account`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Origin': BASE, 'Cookie': session.cookie },
+      body: JSON.stringify({
+        action: 'avatar',
+        avatar: {
+          hat: '#e14d42',
+          shirt: '#61a879',
+          skin: '#efbf87',
+          item: 'xmas_hat'
+        }
+      })
+    });
+    console.log('[BOT] Gorro de Navidad equipado en Camila.');
+  } catch {}
+
   let angle = 0;
   let lastMessageId = null;
   const processedEvents = new Set();
