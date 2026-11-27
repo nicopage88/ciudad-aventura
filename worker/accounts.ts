@@ -9,11 +9,12 @@ async function derive(password:string,salt:string){let material:BufferSource=new
 function equal(a:string,b:string){if(a.length!==b.length)return false;let diff=0;for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i);return diff===0}
 export function cleanAvatar(value:unknown){let v:Record<string,unknown>={};try{v=typeof value==='string'?JSON.parse(value):value as Record<string,unknown>||{}}catch{};return Object.fromEntries(Object.entries(palette).map(([key,colors])=>[key,colors.includes(String(v[key]))?String(v[key]):defaults[key as keyof typeof defaults]]))}
 function tokenFrom(request:Request){return request.headers.get('cookie')?.match(/(?:^|;\s*)city_session=([a-f0-9]{64})(?:;|$)/)?.[1]||''}
+function publicOrigin(request:Request){const url=new URL(request.url),forwarded=request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim();return url.protocol==='http:'&&(forwarded==='http'||forwarded==='https')?`${forwarded}://${url.host}`:url.origin}
 export async function currentAccount(request:Request,db:D1Database):Promise<Account|null>{const token=tokenFrom(request);if(!token)return null;return await db.prepare('SELECT a.id,a.nickname,a.avatar FROM sessions s JOIN accounts a ON a.id=s.account_id WHERE s.token_hash=? AND s.expires>?').bind(await digest(token),Date.now()).first<Account>()}
 const error=(message:string,status=400)=>Response.json({error:message},{status,headers:{'Cache-Control':'no-store'}});
 export async function accountApi(request:Request,db:D1Database):Promise<Response>{
  if(request.method==='GET'){const user=await currentAccount(request,db);return Response.json({user:user?{id:user.id,nickname:user.nickname,avatar:cleanAvatar(user.avatar)}:null},{headers:{'Cache-Control':'no-store'}})}
- if(request.method!=='POST'||request.headers.get('origin')!==new URL(request.url).origin)return error('Acceso no permitido.',403);
+ if(request.method!=='POST'||request.headers.get('origin')!==publicOrigin(request))return error('Acceso no permitido.',403);
  if(Number(request.headers.get('content-length')||0)>4096)return error('Solicitud demasiado grande.',413);
  let input:Record<string,unknown>;try{input=await request.json()}catch{return error('Datos inválidos.')}
  const action=String(input.action||'');
