@@ -2,17 +2,49 @@ const retroStyle=document.createElement('link');retroStyle.rel='stylesheet';retr
 const experienceStyle=document.createElement('link');experienceStyle.rel='stylesheet';experienceStyle.href='experience.css';document.head.append(experienceStyle);
 const PLAZA=L.latLng(-33.5100194,-70.756975);
 const ARICA=L.latLng(-33.5014,-70.76412);
-const map=L.map('map',{zoomControl:false,minZoom:15,maxZoom:19}).setView(PLAZA,18);
+const map=L.map('map',{zoomControl:false,minZoom:10,maxZoom:19,maxBounds:[[-34.8,-72.8],[-32.2,-69.4]]}).setView(PLAZA,18);
 window.map=map;
 map.attributionControl.setPrefix('');
 map.attributionControl.addAttribution('Datos © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>');
 const world=L.layerGroup().addTo(map);
 let fallback=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map),lastQuery='',queryTimer,fetchController;
 fallback.bringToBack();
+
+// Dynamic Zoom Controls for game feel
+const zoomPanel=document.createElement('div');
+zoomPanel.className='game-zoom-panel';
+zoomPanel.innerHTML=`
+  <div class="zoom-actions">
+    <button id="zoom-in" title="Acercar mapa" aria-label="Acercar">＋</button>
+    <button id="zoom-out" title="Alejar mapa" aria-label="Alejar">－</button>
+  </div>
+  <div class="zoom-presets">
+    <button class="zoom-chip active" data-zoom="18" title="Vista calle">🚶 Calle</button>
+    <button class="zoom-chip" data-zoom="16" title="Vista barrio">🏘️ Barrio</button>
+    <button class="zoom-chip" data-zoom="13" title="Vista ciudad Santiago">🏙️ Ciudad</button>
+    <button class="zoom-chip" data-zoom="11" title="Vista Región Metropolitana">🗺️ RM</button>
+  </div>
+`;
+document.querySelector('.map-wrap')?.append(zoomPanel);
+zoomPanel.querySelector('#zoom-in').onclick=()=>map.zoomIn();
+zoomPanel.querySelector('#zoom-out').onclick=()=>map.zoomOut();
+zoomPanel.querySelectorAll('.zoom-chip').forEach(b=>{
+  b.onclick=()=>map.setZoom(Number(b.dataset.zoom),{animate:true});
+});
+map.on('zoomend',()=>{
+  const z=map.getZoom();
+  zoomPanel.querySelectorAll('.zoom-chip').forEach(b=>{
+    const targetZ=Number(b.dataset.zoom);
+    b.classList.toggle('active',Math.abs(z-targetZ)<=1);
+  });
+});
+
 const hint=document.querySelector('#hint'),place=document.querySelector('#place'),scoreEl=document.querySelector('#score'),toast=document.querySelector('#toast');
 function show(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(show.t);show.t=setTimeout(()=>toast.classList.remove('show'),2200)}
 window.show=show;
-function loadWorld(){clearTimeout(queryTimer);queryTimer=setTimeout(async()=>{let center=map.getCenter(),key=(Math.round(center.lat*300)/300)+','+(Math.round(center.lng*300)/300);if(key===lastQuery)return;lastQuery=key;const b=map.getBounds().pad(.05),box=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].join(',');let query=`[out:json][timeout:8];(way["highway"](${box});way["building"](${box});way["leisure"="park"](${box});way["landuse"~"grass|forest|recreation_ground"](${box}););out geom;`;if(fetchController)fetchController.abort();fetchController=new AbortController();try{const res=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:new URLSearchParams({data:query}),signal:fetchController.signal});if(!res.ok)throw Error('map');let data=await res.json();world.clearLayers();if(fallback){map.removeLayer(fallback);fallback=null}let ways=data.elements.filter(w=>w.geometry?.length>1);for(const w of ways.filter(w=>w.tags.leisure||w.tags.landuse)){L.polygon(w.geometry.map(p=>[p.lat,p.lon]),{color:'#568a55',weight:2,fillColor:'#7dc470',fillOpacity:1,interactive:false}).addTo(world)}for(const w of ways.filter(w=>w.tags.highway)){let p=w.geometry.map(p=>[p.lat,p.lon]);let major=/primary|secondary|tertiary/.test(w.tags.highway),wide=major?16:9;L.polyline(p,{color:'#9e9981',weight:wide+4,interactive:false}).addTo(world);L.polyline(p,{color:major?'#e9cf91':'#dfd3ae',weight:wide,interactive:false}).addTo(world)}for(const w of ways.filter(w=>w.tags.building)){L.polygon(w.geometry.map(p=>[p.lat,p.lon]),{color:'#745d56',weight:2,fillColor:'#c99076',fillOpacity:1,interactive:false}).addTo(world)}hint.textContent='Las calles y edificios representan datos reales. ¡Visita la plaza!'}catch(e){if(e.name==='AbortError')return;lastQuery='';if(!fallback){fallback=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);fallback.bringToBack()}hint.textContent='¡A recorrer el barrio, po!'}},700)}
+function loadWorld(){clearTimeout(queryTimer);queryTimer=setTimeout(async()=>{
+  if(map.getZoom()<15)return; // Avoid heavy Overpass calls when zoomed out to RM level
+  let center=map.getCenter(),key=(Math.round(center.lat*300)/300)+','+(Math.round(center.lng*300)/300);if(key===lastQuery)return;lastQuery=key;const b=map.getBounds().pad(.05),box=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].join(',');let query=`[out:json][timeout:8];(way["highway"](${box});way["building"](${box});way["leisure"="park"](${box});way["landuse"~"grass|forest|recreation_ground"](${box}););out geom;`;if(fetchController)fetchController.abort();fetchController=new AbortController();try{const res=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:new URLSearchParams({data:query}),signal:fetchController.signal});if(!res.ok)throw Error('map');let data=await res.json();world.clearLayers();if(fallback){map.removeLayer(fallback);fallback=null}let ways=data.elements.filter(w=>w.geometry?.length>1);for(const w of ways.filter(w=>w.tags.leisure||w.tags.landuse)){L.polygon(w.geometry.map(p=>[p.lat,p.lon]),{color:'#568a55',weight:2,fillColor:'#7dc470',fillOpacity:1,interactive:false}).addTo(world)}for(const w of ways.filter(w=>w.tags.highway)){let p=w.geometry.map(p=>[p.lat,p.lon]);let major=/primary|secondary|tertiary/.test(w.tags.highway),wide=major?16:9;L.polyline(p,{color:'#9e9981',weight:wide+4,interactive:false}).addTo(world);L.polyline(p,{color:major?'#e9cf91':'#dfd3ae',weight:wide,interactive:false}).addTo(world)}for(const w of ways.filter(w=>w.tags.building)){L.polygon(w.geometry.map(p=>[p.lat,p.lon]),{color:'#745d56',weight:2,fillColor:'#c99076',fillOpacity:1,interactive:false}).addTo(world)}hint.textContent='Las calles y edificios representan datos reales. ¡Visita la plaza!'}catch(e){if(e.name==='AbortError')return;lastQuery='';if(!fallback){fallback=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);fallback.bringToBack()}hint.textContent='¡A recorrer el barrio, po!'}},700)}
 map.on('moveend',loadWorld);
 const baseSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42" shape-rendering="crispEdges"><path fill="#29303a" d="M8 2h16v4h4v13h-3v12h-3v8h-6v-5h-2v5H8v-8H5V19H3V7h5z"/><path fill="#e14d42" d="M8 3h16v4h4v5H4V7h4z"/><path fill="#fff3d7" d="M7 12h18v9h-3v3H10v-3H7z"/><path fill="#192e38" d="M10 14h3v3h-3zm9 0h3v3h-3z"/><path fill="#4f91d1" d="M8 24h16v9h-5v-4h-6v4H8z"/><path fill="#efbf87" d="M5 22h3v7H5zm19 0h3v7h-3z"/></svg>`;
 let svg=baseSvg;
@@ -67,4 +99,5 @@ window.makeCityAvatar=(avatar={})=>{const valid=(v,f)=>/^#[a-fA-F0-9]{6}$/.test(
 const thoughtScript=document.createElement('script');thoughtScript.src='thought.js';document.body.append(thoughtScript);
 const multiplayerScript=document.createElement('script');multiplayerScript.src='multiplayer.js';document.body.append(multiplayerScript);
 const pokeScript=document.createElement('script');pokeScript.src='pokemon.js';document.body.append(pokeScript);
+const battleScript=document.createElement('script');battleScript.src='battle.js';document.body.append(battleScript);
 const xmasScript=document.createElement('script');xmasScript.src='christmas.js';document.body.append(xmasScript);

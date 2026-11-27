@@ -288,6 +288,16 @@ header {
   position: relative;
 }
 
+.btn-battle {
+  background: linear-gradient(180deg, #b91c1c 0%, #7f1d1d 100%);
+  border-color: #fca5a5;
+  color: #fff;
+  box-shadow: 0 3px 0 #450a0a;
+}
+.btn-battle:hover {
+  background: #dc2626;
+}
+
 .pokedex-badge {
   background: #ffcb05;
   color: #1a1a1a;
@@ -413,4 +423,75 @@ header {
 @keyframes thought-pop {
   0% { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.85); }
   100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+/* Dynamic Game Zoom Panel */
+.game-zoom-panel {
+  position: absolute;
+  z-index: 500;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(18, 30, 49, 0.90);
+  border: 2px solid #578f78;
+  border-radius: 10px;
+  padding: 4px 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+}
+.zoom-actions {
+  display: flex;
+  gap: 3px;
+}
+.zoom-actions button {
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid #a4b99f;
+  background: #263e37;
+  color: #fff;
+  border-radius: 6px;
+  font: 900 15px monospace;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s;
+}
+.zoom-actions button:hover {
+  background: #3e6357;
+  border-color: #d4dcff;
+}
+.zoom-presets {
+  display: flex;
+  gap: 4px;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.2);
+  padding-left: 6px;
+}
+.zoom-chip {
+  background: transparent;
+  color: #d4dcff;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 7px;
+  font: 800 11px Nunito, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.zoom-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.zoom-chip.active {
+  background: #e09f3e;
+  color: #1a1a1a;
+  border-color: #fff0ba;
+  font-weight: 900;
+}
+@media (max-width: 600px) {
+  .zoom-presets {
+    display: none;
+  }
 }

@@ -179,6 +179,8 @@ async function main() {
               pendingMessage = `¡Hola ${latest.name}! Qué bueno verte en la plaza 😄`;
             } else if (lower.includes('moto') || lower.includes('auto') || lower.includes('viaje')) {
               pendingMessage = `¡Sí quieres te llevo en mi moto! 🏍️💨 Súbete cuando quieras`;
+            } else if (lower.includes('pelea') || lower.includes('batalla') || lower.includes('duelo') || lower.includes('combate')) {
+              pendingMessage = `¡Acepto el duelo Pokémon! ⚔️ Mi Lucario está listo para el combate 🥊`;
             } else if (lower.includes('pokemon') || lower.includes('pokémon') || lower.includes('poke')) {
               pendingMessage = `¡Quiero jugar una partida rápida de poke contigo! 🔴✨`;
             } else if (lower.includes('navidad') || lower.includes('feria') || lower.includes('arbol')) {

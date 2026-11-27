@@ -51,7 +51,31 @@ function playerIcon(name,avatar,bubbleMsg){
   root.append(label,img);
   return L.divIcon({className:'friend-marker-wrap',html:root.outerHTML,iconSize:[40,52],iconAnchor:[20,45]});
 }
-function friendMenu(p){const box=document.createElement('div');box.className='friend-menu';const title=document.createElement('strong');title.textContent=p.name;box.append(title);for(const [label,type] of [['👋 Saludar','saludo'],['¿Qué querís?','pregunta'],['¿Qué pasa, rey?','rey'],['¿Qué necesitái?','necesidad'],['📍 Invitar a juntarse','invitar'],['🤝 Formar junta','junta']]){let b=document.createElement('button');b.textContent=label;b.onclick=()=>{send('@@junta:'+JSON.stringify({to:p.player,type}));map.closePopup();show(type==='saludo'?'¡Saludo enviado!':'Invitación enviada')};box.append(b)}return box}
+function friendMenu(p){
+  const box=document.createElement('div');
+  box.className='friend-menu';
+  const title=document.createElement('strong');
+  title.textContent=p.name;
+  box.append(title);
+
+  // Direct Pokémon Battle button
+  const battleBtn=document.createElement('button');
+  battleBtn.textContent='⚔️ Batalla Pokémon';
+  battleBtn.style.cssText='background:#991b1b !important; color:#fff !important; font-weight:900 !important; margin-bottom:5px;';
+  battleBtn.onclick=()=>{
+    map.closePopup();
+    if(window.startPokemonBattle) window.startPokemonBattle(p.name);
+  };
+  box.append(battleBtn);
+
+  for(const [label,type] of [['👋 Saludar','saludo'],['¿Qué querís?','pregunta'],['¿Qué pasa, rey?','rey'],['¿Qué necesitái?','necesidad'],['📍 Invitar a juntarse','invitar'],['🤝 Formar junta','junta']]){
+    let b=document.createElement('button');
+    b.textContent=label;
+    b.onclick=()=>{send('@@junta:'+JSON.stringify({to:p.player,type}));map.closePopup();show(type==='saludo'?'¡Saludo enviado!':'Invitación enviada')};
+    box.append(b);
+  }
+  return box;
+}
 async function sync(){
   if(!connected||busy)return;
   busy=true;
