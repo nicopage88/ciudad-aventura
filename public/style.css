@@ -298,6 +298,16 @@ header {
   background: #dc2626;
 }
 
+.btn-services {
+  background: linear-gradient(180deg, #1d3557 0%, #102038 100%);
+  border-color: #a8dadc;
+  color: #fff;
+  box-shadow: 0 3px 0 #0d1b2a;
+}
+.btn-services:hover {
+  background: #2b4c7e;
+}
+
 .pokedex-badge {
   background: #ffcb05;
   color: #1a1a1a;

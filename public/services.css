@@ -1,0 +1,276 @@
+/* Portal de Servicios Públicos Chilenos & Clima */
+.weather-hud-widget {
+  position: absolute;
+  z-index: 500;
+  top: 92px;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(18, 30, 49, 0.92);
+  border: 2px solid #578f78;
+  border-radius: 9px;
+  padding: 6px 10px;
+  color: #fff;
+  font: 800 0.73rem Nunito, sans-serif;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: transform 0.15s, border-color 0.2s;
+}
+
+.weather-hud-widget:hover {
+  transform: translateY(-2px);
+  border-color: #ffcb05;
+}
+
+.weather-icon {
+  font-size: 1.1rem;
+}
+
+.weather-temp {
+  font-weight: 900;
+  color: #ffcb05;
+}
+
+/* Services Dashboard Modal */
+.services-modal {
+  position: fixed;
+  z-index: 2800;
+  inset: 0;
+  background: rgba(10, 24, 36, 0.88);
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  backdrop-filter: blur(4px);
+}
+
+.services-modal[hidden] {
+  display: none !important;
+}
+
+.services-dialog {
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fffdf5;
+  color: #1a202c;
+  border: 4px solid #1d3557;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  font: 700 0.92rem Nunito, sans-serif;
+}
+
+.services-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  color: #1d3557;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+}
+
+.services-close-btn {
+  background: none;
+  border: 0;
+  font-size: 1.35rem;
+  color: #718096;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.services-subtitle {
+  font-size: 0.78rem;
+  color: #4a5568;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.services-subtitle a {
+  color: #2b6cb0;
+  text-decoration: underline;
+  font-weight: 800;
+}
+
+/* Grid of Service Cards */
+.services-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.service-card {
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.service-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 900;
+  color: #1e293b;
+  font-size: 0.85rem;
+}
+
+.service-badge {
+  font-size: 0.7rem;
+  background: #e2e8f0;
+  color: #334155;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-weight: 800;
+}
+
+/* Weather display */
+.weather-details-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #e0f2fe;
+  border: 1.5px solid #7dd3fc;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+
+.weather-main-stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.weather-big-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.weather-big-temp {
+  font: 900 1.6rem Nunito, sans-serif;
+  color: #0369a1;
+  line-height: 1;
+}
+
+.weather-stats-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: #475569;
+}
+
+/* Economic indicators */
+.econ-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.econ-item {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.econ-label {
+  display: block;
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.econ-val {
+  display: block;
+  font: 900 0.95rem Nunito, sans-serif;
+  color: #166534;
+  margin-top: 2px;
+}
+
+/* Sismos list */
+.sismos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sismo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid #fed7aa;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.76rem;
+}
+
+.sismo-mag {
+  background: #ea580c;
+  color: #fff;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+
+.sismo-loc {
+  font-weight: 800;
+  color: #334155;
+}
+
+.sismo-time {
+  color: #64748b;
+  font-size: 0.7rem;
+}
+
+/* Map Weather Ambiance Overlays */
+.weather-night-ambient {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 20, 45, 0.22);
+  pointer-events: none;
+  z-index: 400;
+  mix-blend-mode: multiply;
+}
+
+/* Sound Toggle button in HUD */
+.sound-toggle-btn {
+  position: absolute;
+  z-index: 500;
+  top: 92px;
+  right: 140px;
+  border: 2px solid #cbd5e1;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1e293b;
+  border-radius: 8px;
+  padding: 7px 11px;
+  font: 800 0.72rem Nunito, sans-serif;
+  box-shadow: 0 3px 0 #94a3b8;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: all 0.15s;
+}
+
+.sound-toggle-btn.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #60a5fa;
+  box-shadow: 0 3px 0 #1e40af;
+}
+
+@media (max-width: 600px) {
+  .sound-toggle-btn {
+    right: 90px;
+    padding: 6px 8px;
+    font-size: 0.68rem;
+  }
+}

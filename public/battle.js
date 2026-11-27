@@ -248,6 +248,10 @@
     logBox.textContent = `¡Comienza el duelo! ${battleState.trainer} saca a ${battleState.opp.name} (CP ${battleState.opp.cp}). ¡Elige tu movimiento!`;
     modal.hidden = false;
 
+    if (window.playCry) {
+      window.playCry(battleState.opp.id);
+    }
+
     // Send friendly room message from Camila if in room
     if (isCamila && window.show) {
       window.show(`⚔️ ¡Entraste en combate Pokémon con Camila!`);
@@ -316,6 +320,7 @@
 
     setTimeout(() => {
       oppSprite.classList.add('hit-flash');
+      if (window.playHitSound) window.playHitSound();
       setTimeout(() => oppSprite.classList.remove('hit-flash'), 400);
 
       updateHpBars();
@@ -352,6 +357,7 @@
 
     setTimeout(() => {
       mySprite.classList.add('hit-flash');
+      if (window.playHitSound) window.playHitSound();
       setTimeout(() => mySprite.classList.remove('hit-flash'), 400);
 
       updateHpBars();
@@ -371,6 +377,7 @@
   }
 
   function handleVictory() {
+    if (window.playVictorySound) window.playVictorySound();
     logBox.textContent = `¡${battleState.opp.name} del oponente se debilitó! ¡Has ganado el combate! 🏆`;
     resultOverlay.hidden = false;
     modal.querySelector('#result-title').textContent = '¡VICTORIA ÉPICA! 🏆';

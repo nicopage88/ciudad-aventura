@@ -171,6 +171,7 @@
     `;
 
     modalOverlay.hidden = false;
+    if (window.playCry) window.playCry(spawn.data.id);
 
     const btnCatch = modalBody.querySelector('#btn-catch');
     const btnBerry = modalBody.querySelector('#btn-berry');
@@ -179,6 +180,7 @@
     const stage = modalBody.querySelector('#encounter-stage');
 
     btnBerry.onclick = () => {
+      if (window.playClickSound) window.playClickSound();
       if (berryFed) {
         statusText.textContent = `¡${spawn.data.name} ya está satisfecho! ❤️`;
         return;
@@ -191,11 +193,13 @@
     };
 
     btnRun.onclick = () => {
+      if (window.playClickSound) window.playClickSound();
       modalOverlay.hidden = true;
       activeEncounter = null;
     };
 
     btnCatch.onclick = () => {
+      if (window.playThrowSound) window.playThrowSound();
       btnCatch.disabled = true;
       btnBerry.disabled = true;
       btnRun.disabled = true;
@@ -224,6 +228,8 @@
 
       setTimeout(() => {
         if (caught) {
+          if (window.playCatchSound) window.playCatchSound();
+          if (window.playCry) setTimeout(() => window.playCry(spawn.data.id), 600);
           statusText.textContent = `¡${spawn.data.name} atrapado con éxito! 🎉 (CP ${cpDisplay})`;
 
           // Save rich Pokémon info for battles
