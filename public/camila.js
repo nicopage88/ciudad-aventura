@@ -64,25 +64,28 @@
     box.className = 'camila-popup-card';
     box.innerHTML = `
       <div class="camila-popup-head">
-        <strong style="color: #ffd166; font-size: 0.95rem;">🏍️ Camila de Maipú</strong>
+        <strong style="color: #ffd166; font-size: 0.95rem;"><i class="ti ti-motorbike"></i> Camila de Maipú</strong>
         <span style="font-size: 0.72rem; color: #a8dadc;">Entrenadora GitAnimals</span>
       </div>
       <p style="margin: 8px 0; font-size: 0.8rem; line-height: 1.35; color: #f1f5f9;">
         "${currentBubble}"
       </p>
       <div class="camila-actions-col">
-        <button id="camila-battle-act" class="camila-act-btn battle-act">⚔️ Duelo de Mascotas con Camila</button>
-        <button id="camila-ride-act" class="camila-act-btn ride-act">🏍️ Paseo en Moto (Aventón)</button>
-        <button id="camila-chat-act" class="camila-act-btn chat-act">💬 Charlar un rato</button>
+        <button id="camila-battle-act" class="camila-act-btn battle-act"><i class="ti ti-swords"></i> Duelo de Mascotas con Camila</button>
+        <button id="camila-ride-act" class="camila-act-btn ride-act"><i class="ti ti-motorbike"></i> Paseo en Moto (Aventón)</button>
+        <button id="camila-chat-act" class="camila-act-btn chat-act"><i class="ti ti-message-dots"></i> Charlar un rato</button>
       </div>
     `;
 
     box.querySelector('#camila-battle-act').onclick = () => {
       if (marker) marker.closePopup();
+      if (window.playClickSound) window.playClickSound();
       if (window.startPokemonBattle) {
         window.startPokemonBattle('Camila_Maipu');
       } else {
-        alert('Cargando arena de combate...');
+        setTimeout(() => {
+          if (window.startPokemonBattle) window.startPokemonBattle('Camila_Maipu');
+        }, 300);
       }
     };
 

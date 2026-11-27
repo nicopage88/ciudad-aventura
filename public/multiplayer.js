@@ -5,7 +5,7 @@ const ridesSheet=document.createElement('link');ridesSheet.rel='stylesheet';ride
 const pixelSheet=document.createElement('link');pixelSheet.rel='stylesheet';pixelSheet.href='pixel-ui.css';document.head.append(pixelSheet);
 const ambientSheet=document.createElement('link');ambientSheet.rel='stylesheet';ambientSheet.href='ambient.css';document.head.append(ambientSheet);
 let roomBtn=document.querySelector('#open-room');let ridesBtn=document.querySelector('#rides-open');
-const ui=document.createElement('section');ui.innerHTML=`<aside id="room-panel" class="room-panel" hidden><div class="room-head"><strong>LA JUNTA ONLINE</strong><button id="hide-room" aria-label="Cerrar">✕</button></div><div id="join-view"><p>¡Arma la junta, po! Entra a la sala y comparte el enlace.</p><p>Ingresa con tu perfil para jugar con tus amigos.</p><button id="join-room">Entrar a la sala</button></div><div id="chat-view" hidden><div class="room-meta"><span id="room-status">Conectando…</span><button id="copy-room">Copiar invitación</button></div><form id="chat-form"><label for="chat-text">Enviar mensaje a la sala</label><div class="chat-compose"><input id="chat-text" maxlength="200" placeholder="Escribe algo, po..." autocomplete="off"><button>Enviar</button></div></form><button id="leave-room">Salir de la sala</button></div></aside><div id="notice" class="message-notice" hidden><strong id="notice-name"></strong><span id="notice-body"></span><div id="notice-actions"></div></div>`;
+const ui=document.createElement('section');ui.innerHTML=`<aside id="room-panel" class="room-panel" hidden><div class="room-head"><strong>LA JUNTA ONLINE</strong><button id="hide-room" aria-label="Cerrar">✕</button></div><div id="join-view"><p>¡Arma la junta, po! Entra a la sala y comparte el enlace.</p><p>Ingresa con tu perfil para jugar con tus amigos.</p><button id="join-room">Entrar a la sala</button></div><div id="chat-view" hidden><div class="room-meta"><span id="room-status">Conectando…</span><button id="copy-room">Copiar invitación</button></div><form id="chat-form"><label for="chat-text">Enviar mensaje a la sala</label><div class="chat-tabler-bar" style="display:flex;gap:5px;margin:5px 0;overflow-x:auto;padding-bottom:3px;"><button type="button" class="chat-ti-btn" data-c=":swords:" title="Duelo" style="padding:4px 6px;border-radius:6px;border:1px solid #a7b99c;background:#fff;cursor:pointer;"><i class="ti ti-swords"></i> :swords:</button><button type="button" class="chat-ti-btn" data-c=":paw:" title="Mascota" style="padding:4px 6px;border-radius:6px;border:1px solid #a7b99c;background:#fff;cursor:pointer;"><i class="ti ti-paw"></i> :paw:</button><button type="button" class="chat-ti-btn" data-c=":moto:" title="Moto" style="padding:4px 6px;border-radius:6px;border:1px solid #a7b99c;background:#fff;cursor:pointer;"><i class="ti ti-motorbike"></i> :moto:</button><button type="button" class="chat-ti-btn" data-c=":wallet:" title="Billetera" style="padding:4px 6px;border-radius:6px;border:1px solid #a7b99c;background:#fff;cursor:pointer;"><i class="ti ti-wallet"></i> :wallet:</button><button type="button" class="chat-ti-btn" data-c=":trophy:" title="Trofeo" style="padding:4px 6px;border-radius:6px;border:1px solid #a7b99c;background:#fff;cursor:pointer;"><i class="ti ti-trophy"></i> :trophy:</button></div><div class="chat-compose"><input id="chat-text" maxlength="200" placeholder="Escribe algo, po..." autocomplete="off"><button>Enviar</button></div></form><button id="leave-room">Salir de la sala</button></div></aside><div id="notice" class="message-notice" hidden><strong id="notice-name"></strong><span id="notice-body"></span><div id="notice-actions"></div></div>`;
 if(!roomBtn){roomBtn=document.createElement('button');roomBtn.id='open-room';roomBtn.className='room-launch';roomBtn.textContent='👋 JUGAR CON AMIGOS';ui.prepend(roomBtn)}
 document.body.append(ui);
 const q=s=>ui.querySelector(s),panel=q('#room-panel'),join=q('#join-view'),chat=q('#chat-view'),status=q('#room-status'),notice=q('#notice');
@@ -30,14 +30,75 @@ rq('#ride-remove').onclick=async()=>{try{const data=await ridesCall('remove');re
 setInterval(()=>{if(!ridesPanel.hidden)refreshRides()},5000);
 function send(text){pending.push(text);sync()}
 window.sendThoughtToRoom=function(text){if(connected&&text){send(text)}};
-function notify(item){let event=null;try{if(item.body.startsWith('@@junta:'))event=JSON.parse(item.body.slice(8))}catch{}if(event&&event.to!==player)return;q('#notice-name').textContent=item.name+(event?'':' dice:');q('#notice-body').textContent=event?({pregunta:'¿Qué querís? 😄',rey:'¿Qué pasa, rey? 👑',necesidad:'¿Qué necesitái? 🤔',saludo:'¡Te manda un saludo! 👋',viaje:'¿Le das un aventón? 🚗',invitar:'Te invita a juntarse. ¿Aceptas?',junta:'Quiere formar una junta contigo. ¿Aceptas?',aceptado:'¡Aceptó tu invitación! 🙌',rechazado:'Por ahora no puede unirse.'}[event.type]||'Te mandó una invitación.'):item.body;let buttons=q('#notice-actions');buttons.replaceChildren();function button(label,fn){let b=document.createElement('button');b.textContent=label;b.onclick=fn;buttons.append(b)}if(event&&['invitar','junta','viaje'].includes(event.type)){button('Aceptar',()=>{send('@@junta:'+JSON.stringify({to:item.player,type:'aceptado'}));notice.hidden=true;show('¡Se armó, po!')});button('Ahora no',()=>{send('@@junta:'+JSON.stringify({to:item.player,type:'rechazado'}));notice.hidden=true})}else{button('Responder',()=>{notice.hidden=true;panel.hidden=false;q('#chat-text').focus()});button('Cerrar',()=>notice.hidden=true)}notice.hidden=false;clearTimeout(noticeTimer);if(!event||!['invitar','junta','viaje'].includes(event.type))noticeTimer=setTimeout(()=>notice.hidden=true,9000)}
+function notify(item){
+  let event=null;
+  try{if(item.body.startsWith('@@junta:'))event=JSON.parse(item.body.slice(8))}catch{}
+  if(event&&event.to!==player)return;
+  q('#notice-name').textContent=item.name+(event?'':' dice:');
+  const eventMsg = event?({
+    pregunta:'¿Qué querís? 😄',
+    rey:'¿Qué pasa, rey? 👑',
+    necesidad:'¿Qué necesitái? 🤔',
+    saludo:'¡Te manda un saludo! 👋',
+    viaje:'¿Le das un aventón? 🚗',
+    invitar:'Te invita a juntarse. ¿Aceptas?',
+    junta:'Quiere formar una junta contigo. ¿Aceptas?',
+    duelo:'¡Te desafió a un Duelo de Mascotas GitAnimals! ⚔️',
+    duelo_aceptado:'¡Aceptó tu duelo de mascotas! ¡A pelear! 🏆',
+    aceptado:'¡Aceptó tu invitación! 🙌',
+    rechazado:'Por ahora no puede unirse.'
+  }[event.type]||'Te mandó una invitación.'):item.body;
+
+  q('#notice-body').innerHTML = window.renderTablerIcons ? window.renderTablerIcons(eventMsg) : eventMsg;
+
+  let buttons=q('#notice-actions');
+  buttons.replaceChildren();
+  function button(label,fn){let b=document.createElement('button');b.innerHTML=label;b.onclick=fn;buttons.append(b)}
+
+  if(event&&event.type==='duelo'){
+    button('<i class="ti ti-swords"></i> ¡Aceptar Duelo!',()=>{
+      send('@@junta:'+JSON.stringify({to:item.player,type:'duelo_aceptado'}));
+      notice.hidden=true;
+      if(window.startPokemonBattle) window.startPokemonBattle(item.name);
+    });
+    button('Ahora no',()=>{
+      send('@@junta:'+JSON.stringify({to:item.player,type:'rechazado'}));
+      notice.hidden=true;
+    });
+  } else if(event&&event.type==='duelo_aceptado'){
+    button('<i class="ti ti-swords"></i> Entrar a la Arena',()=>{
+      notice.hidden=true;
+      if(window.startPokemonBattle) window.startPokemonBattle(item.name);
+    });
+    button('Cerrar',()=>notice.hidden=true);
+  } else if(event&&['invitar','junta','viaje'].includes(event.type)){
+    button('Aceptar',()=>{send('@@junta:'+JSON.stringify({to:item.player,type:'aceptado'}));notice.hidden=true;show('¡Se armó, po!')});
+    button('Ahora no',()=>{send('@@junta:'+JSON.stringify({to:item.player,type:'rechazado'}));notice.hidden=true});
+  } else {
+    button('Responder',()=>{notice.hidden=true;panel.hidden=false;q('#chat-text').focus()});
+    button('Cerrar',()=>notice.hidden=true);
+  }
+  notice.hidden=false;
+  clearTimeout(noticeTimer);
+  if(!event||!['invitar','junta','viaje','duelo'].includes(event.type))noticeTimer=setTimeout(()=>notice.hidden=true,9000);
+}
 roomBtn.onclick=()=>panel.hidden=!panel.hidden;q('#hide-room').onclick=()=>panel.hidden=true;
 q('#join-room').onclick=async()=>{await window.cityProfileReady;if(!window.cityProfile){window.openCityProfile();return}player=window.cityProfile.id;name=window.cityProfile.nickname;if(!room||!/^[a-zA-Z0-9_-]{8,64}$/.test(room)){room=DEFAULT_ROOM;const u=new URL(location.href);u.searchParams.set('sala',room);history.replaceState(null,'',u)}connected=true;ridesBtn.hidden=false;initial=true;known.clear();join.hidden=true;chat.hidden=false;setPixelIcon(roomBtn,'chat','MENSAJES');sync()};
 q('#leave-room').onclick=()=>{ridesCall('remove').catch(()=>{});connected=false;ridesBtn.hidden=true;ridesPanel.hidden=true;markers.forEach(m=>map.removeLayer(m));markers.clear();chat.hidden=true;join.hidden=false;notice.hidden=true;setPixelIcon(roomBtn,'people','Junta Online')};
 window.addEventListener('city-profile-changed',e=>{if(connected&&(!e.detail||e.detail.id!==player))q('#leave-room').click();else if(e.detail&&room&&!connected){setTimeout(()=>q('#join-room').click(),400)}});
 window.cityProfileReady.then(()=>{if(room&&/^[a-zA-Z0-9_-]{8,64}$/.test(room)){if(window.cityProfile&&!connected){q('#join-room').click();if(window.show)window.show('¡Te uniste automáticamente a la junta!')}else if(!window.cityProfile){if(window.show)window.show('👋 ¡Te invitaron a una junta! Inicia sesión en Perfil.');panel.hidden=false}}});
 q('#copy-room').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);q('#copy-room').textContent='¡Enlace copiado!';setTimeout(()=>{q('#copy-room').textContent='Copiar invitación';panel.hidden=true},1200)}catch{window.prompt('Copia este enlace para tu amigo:',location.href)}};
-q('#chat-form').onsubmit=e=>{e.preventDefault();const input=q('#chat-text'),msg=input.value.trim();if(msg){send(msg);input.value='';panel.hidden=true;show('Mensaje listo para enviar')}};
+
+// Hook Tabler Icon quick chips in chat
+q('#chat-form').querySelectorAll('.chat-ti-btn').forEach(b=>{
+  b.onclick=()=>{
+    const input=q('#chat-text');
+    input.value=(input.value ? input.value+' ' : '')+b.dataset.c+' ';
+    input.focus();
+  };
+});
+
+q('#chat-form').onsubmit=e=>{e.preventDefault();const input=q('#chat-text'),msg=input.value.trim();if(msg){send(msg);input.value='';panel.hidden=true;show('Mensaje enviado')}};
 const playerRecentMsgs=new Map();
 function playerIcon(name,avatar,bubbleMsg){
   let root=document.createElement('div');
@@ -45,7 +106,7 @@ function playerIcon(name,avatar,bubbleMsg){
   if(bubbleMsg){
     let b=document.createElement('div');
     b.className='player-bubble';
-    b.textContent=bubbleMsg;
+    b.innerHTML=window.renderTablerIcons ? window.renderTablerIcons(bubbleMsg) : bubbleMsg;
     root.append(b);
   }
   let img=document.createElement('img');
@@ -65,11 +126,13 @@ function friendMenu(p){
 
   // Direct Pet Battle button
   const battleBtn=document.createElement('button');
-  battleBtn.textContent='⚔️ Duelo de Mascotas GitAnimals';
+  battleBtn.innerHTML='<i class="ti ti-swords"></i> Duelo de Mascotas GitAnimals';
   battleBtn.style.cssText='background:#991b1b !important; color:#fff !important; font-weight:900 !important; margin-bottom:5px;';
   battleBtn.onclick=()=>{
     map.closePopup();
+    send('@@junta:'+JSON.stringify({to:p.player,type:'duelo'}));
     if(window.startPokemonBattle) window.startPokemonBattle(p.name);
+    if(window.show) window.show('⚔️ ¡Desafiaste a '+p.name+' a un duelo! Abriendo arena...');
   };
   box.append(battleBtn);
 

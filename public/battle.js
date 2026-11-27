@@ -1,21 +1,9 @@
-// Pokémon Battle Arena System for Ciudad Aventura
+// GitAnimals Battle Arena System for Ciudad Aventura (Powered by GitAnimals.org & Tabler Icons)
 (()=>{
   const style = document.createElement('link');
   style.rel = 'stylesheet';
-  style.href = 'battle.css';
+  style.href = 'battle.css?v=20261127_04';
   document.head.append(style);
-
-  // Helper URLs (Showdown Fast Edge CDN + PokeAPI Multi-tier fallback)
-  const getOpponentSprite = (name, id) => {
-    const slug = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    return `https://play.pokemonshowdown.com/sprites/ani/${slug}.gif`;
-  };
-  const getPlayerBackSprite = (name, id) => {
-    const slug = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    return `https://play.pokemonshowdown.com/sprites/ani-back/${slug}.gif`;
-  };
-  const getAnimatedSprite = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`;
-  const getStaticSprite = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 
   // Camila's Battle Team (Los GitAnimals más perrones de Maipú)
   const CAMILA_TEAM = [
@@ -32,7 +20,7 @@
         { name: 'Zen Capibara', power: 55, type: 'Chill' },
         { name: 'Bao de Barro', power: 75, type: 'Tierra' },
         { name: 'Mordisco Relajado', power: 80, type: 'Fauna' },
-        { name: 'Carga Soberana', power: 100, type: 'Fauna' }
+        { name: 'Carga Soberana', power: 100, type: 'Poder' }
       ]
     },
     {
@@ -95,7 +83,7 @@
   modal.innerHTML = `
     <div class="battle-arena-card">
       <div class="battle-top-bar">
-        <span id="battle-title">⚔️ ARENA POKÉMON · COMBATE</span>
+        <span id="battle-title"><i class="ti ti-swords"></i> ARENA GITANIMALS · COMBATE</span>
         <button class="battle-close-btn" id="battle-close" type="button" aria-label="Cerrar arena">✕</button>
       </div>
 
@@ -104,48 +92,50 @@
         <div class="battle-opponent-wrap">
           <div class="battle-hud" id="opponent-hud">
             <div class="hud-title-row">
-              <span class="hud-name" id="opp-name">Lucario</span>
-              <span class="hud-level" id="opp-lvl">Nv. 48</span>
+              <span class="hud-name" id="opp-name">Capibara Gigante</span>
+              <span class="hud-level" id="opp-lvl">Nv. 50</span>
             </div>
             <div class="hud-hp-bar-bg">
               <div class="hud-hp-fill" id="opp-hp-fill" style="width: 100%;"></div>
             </div>
             <div class="hud-info-row">
               <span id="opp-trainer">Entrenadora: Camila</span>
-              <span id="opp-cp">CP 2750</span>
+              <span id="opp-cp">CP 3800</span>
             </div>
           </div>
-          <div class="opponent-stage">
+          <div class="opponent-stage" id="opp-stage">
             <img class="opponent-sprite-img" id="opp-sprite" alt="Oponente">
+            <div class="pet-emoji-fallback" id="opp-emoji-fallback" hidden>🦫</div>
           </div>
         </div>
 
         <!-- Player (Bottom Left) -->
         <div class="battle-player-wrap">
-          <div class="player-stage">
-            <img class="player-sprite-img" id="player-sprite" alt="Tu Pokémon">
+          <div class="player-stage" id="player-stage">
+            <img class="player-sprite-img" id="player-sprite" alt="Tu Mascota">
+            <div class="pet-emoji-fallback" id="player-emoji-fallback" hidden>🐕</div>
           </div>
           <div class="battle-hud" id="player-hud">
             <div class="hud-title-row">
-              <span class="hud-name" id="my-poke-name">Charizard</span>
+              <span class="hud-name" id="my-poke-name">Shiba Inu Perrón</span>
               <span class="hud-level" id="my-poke-lvl">Nv. 50</span>
             </div>
             <div class="hud-hp-bar-bg">
               <div class="hud-hp-fill" id="my-hp-fill" style="width: 100%;"></div>
             </div>
             <div class="hud-info-row">
-              <span id="my-hp-text">220 / 220 HP</span>
-              <span id="my-poke-cp">CP 2880</span>
+              <span id="my-hp-text">230 / 230 HP</span>
+              <span id="my-poke-cp">CP 3500</span>
             </div>
           </div>
         </div>
 
         <div id="battle-result" class="battle-result-overlay" hidden>
-          <div class="result-title" id="result-title">¡VICTORIA! 🎉</div>
+          <div class="result-title" id="result-title"><i class="ti ti-trophy"></i> ¡VICTORIA! 🎉</div>
           <p class="result-message" id="result-desc"></p>
           <div class="result-btn-row">
-            <button class="result-btn btn-rematch" id="btn-rematch">⚔️ Revancha</button>
-            <button class="result-btn btn-quit" id="btn-quit">Volver al Mapa</button>
+            <button class="result-btn btn-rematch" id="btn-rematch"><i class="ti ti-rotate"></i> Revancha</button>
+            <button class="result-btn btn-quit" id="btn-quit"><i class="ti ti-arrow-back-up"></i> Volver al Mapa</button>
           </div>
         </div>
       </div>
@@ -176,6 +166,7 @@
   const oppTrainer = modal.querySelector('#opp-trainer');
   const oppCp = modal.querySelector('#opp-cp');
   const oppSprite = modal.querySelector('#opp-sprite');
+  const oppFallback = modal.querySelector('#opp-emoji-fallback');
 
   // Player elements
   const myName = modal.querySelector('#my-poke-name');
@@ -184,6 +175,7 @@
   const myHpText = modal.querySelector('#my-hp-text');
   const myCp = modal.querySelector('#my-poke-cp');
   const mySprite = modal.querySelector('#player-sprite');
+  const playerFallback = modal.querySelector('#player-emoji-fallback');
 
   let battleState = null;
 
@@ -198,11 +190,30 @@
     if (battleState && battleState.isWild && battleState.wildData) {
       startBattle(battleState.wildData, { isWild: true, spawnId: battleState.spawnId });
     } else {
-      startBattle('Camila_Maipu');
+      startBattle(battleState ? battleState.trainer : 'Camila_Maipu');
     }
   };
 
-  // Find best Pokémon from user Pokédex (Robust data sanitizer)
+  // Safely sets GitAnimals sprite with instant emoji fallback
+  function setPetSprite(imgEl, fallbackEl, pet) {
+    if (!pet) return;
+    if (pet.petId) {
+      imgEl.hidden = false;
+      fallbackEl.hidden = true;
+      imgEl.src = `https://render.gitanimals.org/lines/devxb?pet-id=${pet.petId}&contribution-view=false`;
+      imgEl.onerror = () => {
+        imgEl.hidden = true;
+        fallbackEl.textContent = pet.emoji || '🐾';
+        fallbackEl.hidden = false;
+      };
+    } else {
+      imgEl.hidden = true;
+      fallbackEl.textContent = pet.emoji || '🐾';
+      fallbackEl.hidden = false;
+    }
+  }
+
+  // Find best Pet from user collection
   function getBestUserPokemon() {
     let pokedex = {};
     try {
@@ -219,11 +230,11 @@
 
       const catalog = window.WILD_POKEMON ? window.WILD_POKEMON.find(w => w.id === id) : null;
       const name = val.name || catalog?.name || `Mascota #${id}`;
-      const petId = val.petId || catalog?.petId || '1';
-      const emoji = val.emoji || catalog?.emoji || '🐾';
+      const petId = val.petId || catalog?.petId || '739451414643536153';
+      const emoji = val.emoji || catalog?.emoji || '🐕';
       const type = val.type || catalog?.type || 'Fauna';
-      const cp = Number(val.cp || catalog?.baseCp || 1800);
-      const hp = Number(val.hp || catalog?.hp || 190);
+      const cp = Number(val.cp || catalog?.baseCp || 2500);
+      const hp = Number(val.hp || catalog?.hp || 200);
       const moves = (val.moves && val.moves.length > 0) ? val.moves : (catalog?.moves || [
         { name: 'Mordisco Ágil', power: 45, type: 'Fauna' },
         { name: 'Salto Veloz', power: 55, type: 'Agilidad' },
@@ -257,14 +268,14 @@
       wildData = (typeof target === 'object') ? target : (window.WILD_POKEMON ? window.WILD_POKEMON.find(p => p.id === Number(target)) : null);
       if (!wildData) wildData = CAMILA_TEAM[0];
 
-      const cp = Number(wildData.cp || wildData.baseCp || 1800);
-      const hp = Number(wildData.hp || 190);
+      const cp = Math.max(800, Number(wildData.cp || wildData.baseCp || 1800));
+      const hp = Math.max(120, Number(wildData.hp || 190));
       const level = Math.min(60, Math.max(20, Math.round(cp / 55)));
       const moves = (wildData.moves && wildData.moves.length > 0) ? wildData.moves : [
         { name: 'Mordisco Salvaje', power: 45, type: 'Fauna' },
         { name: 'Ataque Furia', power: 55, type: 'Agilidad' },
         { name: 'Salto Amigo', power: 65, type: 'Normal' },
-        { name: 'Carga Soberana', power: 85, type: 'Fauna' }
+        { name: 'Carga Soberana', power: 85, type: 'Poder' }
       ];
 
       oppData = {
@@ -279,14 +290,14 @@
         hp,
         moves
       };
-      trainerLabel = 'Animalito Salvaje (GitAnimals)';
-      arenaTitle.textContent = `⚔️ ARENA · COMBATE CON ${wildData.name.toUpperCase()} SALVAJE`;
+      trainerLabel = 'Mascota Salvaje (GitAnimals)';
+      arenaTitle.innerHTML = `<i class="ti ti-swords"></i> ARENA · COMBATE CON ${wildData.name.toUpperCase()} SALVAJE`;
     } else {
       // Pick Camila or other online trainer
       const oppBase = CAMILA_TEAM[Math.floor(Math.random() * CAMILA_TEAM.length)];
       oppData = { ...oppBase, hp: oppBase.maxHp };
       trainerLabel = isCamila ? 'Entrenadora: Camila' : `Entrenador: ${target}`;
-      arenaTitle.textContent = isCamila ? '⚔️ ARENA DE MASCOTAS · DUELO CON CAMILA' : `⚔️ ARENA · DUELO CON ${target}`;
+      arenaTitle.innerHTML = isCamila ? '<i class="ti ti-swords"></i> ARENA DE MASCOTAS · DUELO CON CAMILA' : `<i class="ti ti-swords"></i> ARENA · DUELO CON ${target}`;
     }
 
     const myBase = getBestUserPokemon();
@@ -310,33 +321,23 @@
     oppLvl.textContent = `Nv. ${battleState.opp.level}`;
     oppTrainer.textContent = trainerLabel;
     oppCp.textContent = `CP ${battleState.opp.cp}`;
-    if (battleState.opp.petId) {
-      oppSprite.src = `https://render.gitanimals.org/lines/devxb?pet-id=${battleState.opp.petId}`;
-    } else {
-      oppSprite.src = getOpponentSprite(battleState.opp.name, battleState.opp.id);
-      oppSprite.onerror = () => { oppSprite.src = getStaticSprite(battleState.opp.id); };
-    }
+    setPetSprite(oppSprite, oppFallback, battleState.opp);
     updateHpBars();
 
     // Update Player HUD
     myName.textContent = (battleState.player.emoji ? battleState.player.emoji + ' ' : '') + battleState.player.name;
     myLvl.textContent = `Nv. ${battleState.player.level}`;
     myCp.textContent = `CP ${battleState.player.cp}`;
-    if (battleState.player.petId) {
-      mySprite.src = `https://render.gitanimals.org/lines/devxb?pet-id=${battleState.player.petId}`;
-    } else {
-      mySprite.src = getPlayerBackSprite(battleState.player.name, battleState.player.id);
-      mySprite.onerror = () => { mySprite.src = getStaticSprite(battleState.player.id); };
-    }
+    setPetSprite(mySprite, playerFallback, battleState.player);
     updateHpBars();
 
     // Render Moves
     renderMoveButtons();
 
     if (isWild) {
-      logBox.textContent = `¡Un ${battleState.opp.name} salvaje (CP ${battleState.opp.cp}) ruge en la arena! ¡Elige tu ataque!`;
+      logBox.innerHTML = `¡Un <strong>${battleState.opp.name}</strong> salvaje (CP ${battleState.opp.cp}) ruge en la arena! ¡Elige tu ataque!`;
     } else {
-      logBox.textContent = `¡Comienza el duelo! ${battleState.trainer} saca a ${battleState.opp.name} (CP ${battleState.opp.cp}). ¡Elige tu movimiento!`;
+      logBox.innerHTML = `¡Comienza el duelo! <strong>${battleState.trainer}</strong> saca a <strong>${battleState.opp.name}</strong> (CP ${battleState.opp.cp}). ¡Elige tu movimiento!`;
     }
 
     modal.hidden = false;
@@ -346,15 +347,20 @@
     }
 
     if (isCamila && window.show) {
-      window.show(`⚔️ ¡Entraste en combate Pokémon con Camila!`);
+      window.show(`⚔️ ¡Entraste en duelo de mascotas con Camila!`);
     } else if (isWild && window.show) {
       window.show(`⚔️ ¡Combatiendo contra ${battleState.opp.name} salvaje!`);
+    } else if (window.show) {
+      window.show(`⚔️ ¡Duelo en la arena contra ${battleState.trainer}!`);
     }
   }
 
   // Public Battle Launcher APIs
   window.startPokemonBattle = (target = 'Camila_Maipu', opts = {}) => startBattle(target, opts);
+  window.startPetBattle = window.startPokemonBattle;
+  window.startBattle = window.startPokemonBattle;
   window.startPokemonBattleWithWild = (wildData, spawnId = null) => startBattle(wildData, { isWild: true, spawnId });
+  window.startPetBattleWithWild = window.startPokemonBattleWithWild;
 
   function updateHpBars() {
     if (!battleState) return;
@@ -382,8 +388,8 @@
       btn.innerHTML = `
         <span class="move-btn-name">${move.name}</span>
         <div class="move-btn-meta">
-          <span>${move.type}</span>
-          <span>Poder: ${move.power}</span>
+          <span><i class="ti ti-paw"></i> ${move.type}</span>
+          <span><i class="ti ti-bolt"></i> ${move.power}</span>
         </div>
       `;
       btn.onclick = () => executePlayerMove(move);
@@ -402,79 +408,113 @@
     battleState.turnBusy = true;
     setMovesDisabled(true);
 
-    if (window.playClickSound) window.playClickSound();
+    try {
+      if (window.playClickSound) window.playClickSound();
 
-    // Player attack animation
-    mySprite.classList.add('attack-lunge');
-    setTimeout(() => mySprite.classList.remove('attack-lunge'), 350);
+      // Player attack animation
+      mySprite.classList.add('attack-lunge');
+      playerFallback.classList.add('attack-lunge');
+      setTimeout(() => {
+        mySprite.classList.remove('attack-lunge');
+        playerFallback.classList.remove('attack-lunge');
+      }, 350);
 
-    // Calculate damage
-    const isCrit = Math.random() < 0.20;
-    const variance = 0.9 + Math.random() * 0.25;
-    const power = move.power || 50;
-    const baseDamage = (power * 0.42 * (battleState.player.cp / battleState.opp.cp)) * variance;
-    const finalDamage = Math.max(15, Math.round(baseDamage * (isCrit ? 1.4 : 1.0)));
+      // Robust damage calculation
+      const isCrit = Math.random() < 0.22;
+      const variance = 0.90 + Math.random() * 0.25;
+      const power = Math.max(20, Number(move.power) || 50);
+      const playerCp = Math.max(500, Number(battleState.player.cp) || 2500);
+      const oppCp = Math.max(500, Number(battleState.opp.cp) || 2500);
+      const baseDamage = (power * 0.42 * (playerCp / oppCp)) * variance;
+      const finalDamage = Math.max(14, Math.round(baseDamage * (isCrit ? 1.4 : 1.0)));
 
-    battleState.opp.hp = Math.max(0, battleState.opp.hp - finalDamage);
+      battleState.opp.hp = Math.max(0, battleState.opp.hp - finalDamage);
 
-    setTimeout(() => {
-      oppSprite.classList.add('hit-flash');
-      if (window.playHitSound) window.playHitSound();
-      setTimeout(() => oppSprite.classList.remove('hit-flash'), 400);
+      setTimeout(() => {
+        oppSprite.classList.add('hit-flash');
+        oppFallback.classList.add('hit-flash');
+        if (window.playHitSound) window.playHitSound();
+        setTimeout(() => {
+          oppSprite.classList.remove('hit-flash');
+          oppFallback.classList.remove('hit-flash');
+        }, 400);
 
-      updateHpBars();
-      const critText = isCrit ? ' ¡Golpe crítico! 💥' : '';
-      logBox.textContent = `¡Tu ${battleState.player.name} usó ${move.name}!${critText} Causó ${finalDamage} de daño.`;
+        updateHpBars();
+        const critText = isCrit ? ' <span style="color:#ffd700;">¡Golpe crítico! 💥</span>' : '';
+        logBox.innerHTML = `¡Tu <strong>${battleState.player.name}</strong> usó <em>${move.name}</em>!${critText} Causó <strong>${finalDamage}</strong> de daño.`;
 
-      // Check if Opponent Faints
-      if (battleState.opp.hp <= 0) {
-        setTimeout(handleVictory, 800);
-        return;
-      }
+        // Check if Opponent Faints
+        if (battleState.opp.hp <= 0) {
+          setTimeout(handleVictory, 800);
+          return;
+        }
 
-      // Opponent Turn after short delay
-      setTimeout(executeOpponentTurn, 900);
-    }, 250);
+        // Opponent Turn after short delay
+        setTimeout(executeOpponentTurn, 900);
+      }, 250);
+    } catch (err) {
+      console.error('Error en turno jugador:', err);
+      battleState.turnBusy = false;
+      setMovesDisabled(false);
+    }
   }
 
   function executeOpponentTurn() {
     if (!battleState || battleState.opp.hp <= 0) return;
 
-    const oppMoves = (battleState.opp.moves && battleState.opp.moves.length > 0) ? battleState.opp.moves : [
-      { name: 'Golpe', power: 45, type: 'Normal' }
-    ];
-    const move = oppMoves[Math.floor(Math.random() * oppMoves.length)];
+    try {
+      const oppMoves = (battleState.opp.moves && battleState.opp.moves.length > 0) ? battleState.opp.moves : [
+        { name: 'Golpe Ágil', power: 45, type: 'Fauna' }
+      ];
+      const move = oppMoves[Math.floor(Math.random() * oppMoves.length)];
 
-    oppSprite.classList.add('attack-lunge');
-    setTimeout(() => oppSprite.classList.remove('attack-lunge'), 350);
+      oppSprite.classList.add('attack-lunge');
+      oppFallback.classList.add('attack-lunge');
+      setTimeout(() => {
+        oppSprite.classList.remove('attack-lunge');
+        oppFallback.classList.remove('attack-lunge');
+      }, 350);
 
-    const isCrit = Math.random() < 0.15;
-    const variance = 0.88 + Math.random() * 0.24;
-    const power = move.power || 50;
-    const baseDamage = (power * 0.38 * (battleState.opp.cp / battleState.player.cp)) * variance;
-    const finalDamage = Math.max(14, Math.round(baseDamage * (isCrit ? 1.35 : 1.0)));
+      const isCrit = Math.random() < 0.15;
+      const variance = 0.88 + Math.random() * 0.24;
+      const power = Math.max(20, Number(move.power) || 50);
+      const playerCp = Math.max(500, Number(battleState.player.cp) || 2500);
+      const oppCp = Math.max(500, Number(battleState.opp.cp) || 2500);
+      const baseDamage = (power * 0.38 * (oppCp / playerCp)) * variance;
+      const finalDamage = Math.max(12, Math.round(baseDamage * (isCrit ? 1.35 : 1.0)));
 
-    battleState.player.hp = Math.max(0, battleState.player.hp - finalDamage);
+      battleState.player.hp = Math.max(0, battleState.player.hp - finalDamage);
 
-    setTimeout(() => {
-      mySprite.classList.add('hit-flash');
-      if (window.playHitSound) window.playHitSound();
-      setTimeout(() => mySprite.classList.remove('hit-flash'), 400);
+      setTimeout(() => {
+        mySprite.classList.add('hit-flash');
+        playerFallback.classList.add('hit-flash');
+        if (window.playHitSound) window.playHitSound();
+        setTimeout(() => {
+          mySprite.classList.remove('hit-flash');
+          playerFallback.classList.remove('hit-flash');
+        }, 400);
 
-      updateHpBars();
-      const critText = isCrit ? ' ¡Fue súper efectivo! ⚡' : '';
-      logBox.textContent = `¡El ${battleState.opp.name} de ${battleState.trainer} usó ${move.name}!${critText} Recibiste ${finalDamage} de daño.`;
+        updateHpBars();
+        const critText = isCrit ? ' <span style="color:#ef4444;">¡Golpe certero! ⚡</span>' : '';
+        logBox.innerHTML = `¡El <strong>${battleState.opp.name}</strong> de ${battleState.trainer} usó <em>${move.name}</em>!${critText} Recibiste <strong>${finalDamage}</strong> de daño.`;
 
-      // Check if Player Faints
-      if (battleState.player.hp <= 0) {
-        setTimeout(handleDefeat, 800);
-        return;
+        // Check if Player Faints
+        if (battleState.player.hp <= 0) {
+          setTimeout(handleDefeat, 800);
+          return;
+        }
+
+        // Turn complete: re-enable player moves
+        battleState.turnBusy = false;
+        setMovesDisabled(false);
+      }, 250);
+    } catch (err) {
+      console.error('Error en turno oponente:', err);
+      if (battleState) {
+        battleState.turnBusy = false;
+        setMovesDisabled(false);
       }
-
-      // Turn complete: re-enable player moves
-      battleState.turnBusy = false;
-      setMovesDisabled(false);
-    }, 250);
+    }
   }
 
   function handleVictory() {
@@ -482,34 +522,40 @@
     resultOverlay.hidden = false;
 
     if (battleState.isWild && battleState.wildData) {
-      logBox.textContent = `¡${battleState.opp.name} se debilitó y fue capturado! 🎉`;
-      modal.querySelector('#result-title').textContent = '¡POKÉMON CAPTURADO! 🏆';
+      logBox.innerHTML = `¡${battleState.opp.name} se debilitó y fue adoptado! 🎉`;
+      modal.querySelector('#result-title').innerHTML = '<i class="ti ti-trophy"></i> ¡MASCOTA ADOPTADA! 🏆';
       modal.querySelector('#result-title').style.color = '#ffd700';
-      modal.querySelector('#result-desc').textContent = `¡Derrotaste a ${battleState.opp.name} en la arena! Se rinde ante tu poder y se sumó a tu Mochila con CP ${battleState.opp.cp}.`;
+      modal.querySelector('#result-desc').textContent = `¡Derrotaste a ${battleState.opp.name} en la arena! Se une a tu granja de GitAnimals con CP ${battleState.opp.cp}.`;
 
       // Auto-catch upon victory
       if (window.addPokemonToPokedex) {
         window.addPokemonToPokedex(battleState.wildData, battleState.spawnId);
       }
       if (window.show) {
-        window.show(`🏆 ¡Victoria! ${battleState.opp.name} capturado tras la batalla.`);
+        window.show(`🏆 ¡Victoria! ${battleState.opp.name} adoptado tras la batalla.`);
       }
     } else {
-      logBox.textContent = `¡${battleState.opp.name} del oponente se debilitó! ¡Has ganado el combate! 🏆`;
-      modal.querySelector('#result-title').textContent = '¡VICTORIA ÉPICA! 🏆';
+      logBox.innerHTML = `¡${battleState.opp.name} del oponente se debilitó! ¡Has ganado el duelo! 🏆`;
+      modal.querySelector('#result-title').innerHTML = '<i class="ti ti-trophy"></i> ¡VICTORIA ÉPICA! 🏆';
       modal.querySelector('#result-title').style.color = '#ffd700';
-      modal.querySelector('#result-desc').textContent = `Derrotaste a ${battleState.trainer} y su ${battleState.opp.name}. Tu ${battleState.player.name} demostró gran poderío en la arena.`;
+      modal.querySelector('#result-desc').textContent = `Derrotaste a ${battleState.trainer} y su ${battleState.opp.name}. Tu ${battleState.player.name} demostró gran poder en la arena.`;
+
+      // Win counter bump
+      const scoreEl = document.querySelector('#score');
+      if (scoreEl) {
+        scoreEl.textContent = (Number(scoreEl.textContent) || 0) + 1;
+      }
 
       if (window.show) {
-        window.show(`🏆 ¡Victoria! Venciste al ${battleState.opp.name} de ${battleState.trainer}.`);
+        window.show(`🏆 ¡Victoria! Venciste a ${battleState.trainer} en el duelo.`);
       }
     }
   }
 
   function handleDefeat() {
-    logBox.textContent = `¡Tu ${battleState.player.name} se ha debilitado! ${battleState.trainer} ganó esta ronda.`;
+    logBox.innerHTML = `¡Tu ${battleState.player.name} se ha debilitado! ${battleState.trainer} ganó esta ronda.`;
     resultOverlay.hidden = false;
-    modal.querySelector('#result-title').textContent = '¡BUENA PELEA! 🥊';
+    modal.querySelector('#result-title').innerHTML = '<i class="ti ti-swords"></i> ¡BUENA PELEA! 🥊';
     modal.querySelector('#result-title').style.color = '#f87171';
     modal.querySelector('#result-desc').textContent = `${battleState.trainer} se llevó la victoria por poco. ¡Entrena en las plazas de la ciudad y tómate la revancha!`;
 

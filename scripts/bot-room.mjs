@@ -164,6 +164,11 @@ async function main() {
                   setTimeout(() => {
                     pendingMessage = `¡Se armó la junta con ${latest.name}! Vamos a recorrer el barrio 🙌`;
                   }, 2500);
+                } else if (event.type === 'duelo') {
+                  pendingMessage = `@@junta:${JSON.stringify({ to: latest.player, type: 'duelo_aceptado' })}`;
+                  setTimeout(() => {
+                    pendingMessage = `¡Acepto tu duelo de mascotas ${latest.name}! ⚔️ ¡Mi Capibara Gigante está listo para la arena! 🦫`;
+                  }, 2500);
                 } else if (event.type === 'viaje') {
                   pendingMessage = `@@junta:${JSON.stringify({ to: latest.player, type: 'aceptado' })}`;
                   setTimeout(() => {

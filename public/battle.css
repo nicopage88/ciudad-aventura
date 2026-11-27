@@ -1,13 +1,13 @@
-/* Retro Pokémon Battle Arena Styling */
+/* Retro Pet Battle Arena Styling (GitAnimals) */
 .battle-modal {
   position: fixed;
-  z-index: 3000;
+  z-index: 99999 !important;
   inset: 0;
-  background: rgba(8, 18, 28, 0.92);
+  background: rgba(8, 18, 28, 0.94);
   display: grid;
   place-items: center;
   padding: 14px;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(6px);
 }
 
 .battle-modal[hidden] {
@@ -19,9 +19,9 @@
   max-height: 94vh;
   overflow: hidden;
   background: #1b263b;
-  border: 5px solid #ffcb05;
+  border: 4px solid #ffd166;
   border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 203, 5, 0.4);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 209, 102, 0.4);
   display: flex;
   flex-direction: column;
 }
@@ -31,33 +31,48 @@
   justify-content: space-between;
   align-items: center;
   background: #0d1b2a;
-  border-bottom: 3px solid #ffcb05;
-  padding: 8px 14px;
-  color: #ffcb05;
+  border-bottom: 3px solid #ffd166;
+  padding: 10px 16px;
+  color: #ffd166;
   font-family: 'Press Start 2P', monospace;
   font-size: 0.68rem;
 }
 
+.battle-top-bar span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.battle-top-bar span i {
+  font-size: 1.15rem;
+}
+
 .battle-close-btn {
-  background: none;
-  border: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
   color: #fff;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   cursor: pointer;
   line-height: 1;
+  padding: 4px 8px;
+}
+.battle-close-btn:hover {
+  background: rgba(239, 68, 68, 0.7);
 }
 
 /* Arena Field */
 .battle-field {
   position: relative;
-  height: 250px;
-  background: linear-gradient(180deg, #48cae4 0%, #90e0ef 45%, #52b788 45%, #2d6a4f 100%);
+  min-height: 250px;
+  background: linear-gradient(180deg, #3a86ff 0%, #48cae4 42%, #52b788 42%, #1b4332 100%);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 12px 16px;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+  box-shadow: inset 0 0 24px rgba(0,0,0,0.35);
 }
 
 /* Opponent Area (Top-Right) */
@@ -65,16 +80,17 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 10px;
 }
 
 .battle-hud {
-  background: rgba(255, 255, 255, 0.94);
-  border: 3px solid #264653;
+  background: rgba(255, 255, 255, 0.95);
+  border: 3px solid #1b263b;
   border-radius: 10px;
-  padding: 7px 10px;
-  min-width: 170px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.25);
-  font: 800 0.78rem Nunito, sans-serif;
+  padding: 8px 12px;
+  min-width: 175px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  font: 800 0.8rem Nunito, sans-serif;
   color: #1a1a1a;
 }
 
@@ -88,13 +104,13 @@
 .hud-name {
   font-weight: 900;
   color: #1d3557;
+  font-size: 0.88rem;
 }
 
 .hud-level {
-  font-size: 0.72rem;
   background: #e63946;
   color: #fff;
-  padding: 1px 5px;
+  padding: 1px 6px;
   border-radius: 4px;
   font-family: 'Press Start 2P', monospace;
   font-size: 0.55rem;
@@ -134,19 +150,34 @@
 }
 
 /* Sprites in Field */
-.opponent-stage {
+.opponent-stage, .player-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 130px;
+  min-height: 100px;
 }
 
-.opponent-sprite-img {
-  width: 80px;
-  height: 80px;
+.opponent-sprite-img, .player-sprite-img {
+  width: 140px;
+  height: 95px;
   object-fit: contain;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 6px 4px rgba(0,0,0,0.4));
+  filter: drop-shadow(0 6px 4px rgba(0,0,0,0.45));
   transition: transform 0.2s;
+}
+
+.pet-emoji-fallback {
+  font-size: 3.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+  animation: pet-bounce 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes pet-bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-7px); }
 }
 
 /* Player Area (Bottom-Left) */
@@ -154,6 +185,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  gap: 10px;
 }
 
 .player-stage {
